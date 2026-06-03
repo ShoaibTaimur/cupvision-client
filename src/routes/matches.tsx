@@ -10,7 +10,10 @@ export const Route = createFileRoute("/matches")({
   head: () => ({
     meta: [
       { title: "Matches — CupVision" },
-      { name: "description", content: "Browse and search all 2026 FIFA World Cup matches by status, group and team." },
+      {
+        name: "description",
+        content: "Browse and search all 2026 FIFA World Cup matches by status, group and team.",
+      },
       { property: "og:title", content: "Matches — CupVision" },
       { property: "og:description", content: "Browse and search all 2026 FIFA World Cup matches." },
     ],
@@ -18,8 +21,16 @@ export const Route = createFileRoute("/matches")({
   component: MatchesPage,
 });
 
-const STATUSES = ["all", "scheduled", "live", "awaiting_result", "completed", "cancelled", "postponed"];
-const GROUPS = ["all", ...["A","B","C","D","E","F","G","H","I","J","K","L"]];
+const STATUSES = [
+  "all",
+  "scheduled",
+  "live",
+  "awaiting_result",
+  "completed",
+  "cancelled",
+  "postponed",
+];
+const GROUPS = ["all", ...["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]];
 
 function MatchesPage() {
   const [q, setQ] = useState("");
@@ -45,7 +56,10 @@ function MatchesPage() {
           m.city,
           String(m.matchNumber),
           m.stage,
-        ].filter(Boolean).join(" ").toLowerCase();
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
         if (!hay.includes(n)) return false;
       }
       return true;
@@ -72,20 +86,30 @@ function MatchesPage() {
           onChange={(e) => setStatus(e.target.value)}
           className="bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          {STATUSES.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
+          {STATUSES.map((s) => (
+            <option key={s} value={s}>
+              {s.replace("_", " ")}
+            </option>
+          ))}
         </select>
         <select
           value={group}
           onChange={(e) => setGroup(e.target.value)}
           className="bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         >
-          {GROUPS.map((g) => <option key={g} value={g}>{g === "all" ? "All groups" : `Group ${g}`}</option>)}
+          {GROUPS.map((g) => (
+            <option key={g} value={g}>
+              {g === "all" ? "All groups" : `Group ${g}`}
+            </option>
+          ))}
         </select>
       </div>
 
       {matches.isLoading ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {Array.from({ length: 9 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+          {Array.from({ length: 9 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
         </div>
       ) : matches.isError ? (
         <p className="text-sm text-destructive">Failed to load matches. Check VITE_API_URL.</p>
@@ -93,7 +117,9 @@ function MatchesPage() {
         <p className="text-sm text-muted-foreground">No matches match your filters.</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map((m) => <MatchCard key={m._id} m={m} />)}
+          {filtered.map((m) => (
+            <MatchCard key={m._id} m={m} />
+          ))}
         </div>
       )}
     </div>

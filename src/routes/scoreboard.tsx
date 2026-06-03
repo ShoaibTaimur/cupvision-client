@@ -77,19 +77,38 @@ function ScoreboardPage() {
                   className="border-b border-border last:border-0 hover:bg-secondary cursor-pointer transition-colors"
                 >
                   <td className="px-3 py-3 text-muted-foreground">{idx + 1}</td>
-                  <td className="px-3 py-3 font-medium">{s.team.name}{s.team.group && <span className="ml-2 text-[10px] text-muted-foreground">Group {s.team.group}</span>}</td>
+                  <td className="px-3 py-3 font-medium">
+                    {s.team.name}
+                    {s.team.group && (
+                      <span className="ml-2 text-[10px] text-muted-foreground">
+                        Group {s.team.group}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 py-3 text-right tabular-nums">{s.played}</td>
                   <td className="px-3 py-3 text-right tabular-nums">{s.wins}</td>
                   <td className="px-3 py-3 text-right tabular-nums">{s.draws}</td>
                   <td className="px-3 py-3 text-right tabular-nums">{s.losses}</td>
-                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">{s.goalsFor}</td>
-                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">{s.goalsAgainst}</td>
-                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">{s.goalDiff > 0 ? `+${s.goalDiff}` : s.goalDiff}</td>
-                  <td className="px-3 py-3 text-right font-bold text-primary tabular-nums">{s.points}</td>
+                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">
+                    {s.goalsFor}
+                  </td>
+                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">
+                    {s.goalsAgainst}
+                  </td>
+                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">
+                    {s.goalDiff > 0 ? `+${s.goalDiff}` : s.goalDiff}
+                  </td>
+                  <td className="px-3 py-3 text-right font-bold text-primary tabular-nums">
+                    {s.points}
+                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={10} className="px-3 py-8 text-center text-muted-foreground">No teams found.</td></tr>
+                <tr>
+                  <td colSpan={10} className="px-3 py-8 text-center text-muted-foreground">
+                    No teams found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -111,25 +130,37 @@ function TeamModal({ teamId, onClose }: { teamId: string; onClose: () => void })
   });
   const detail = useQuery({
     queryKey: ["team-stats", teamId],
-    queryFn: () => api.get<{
-      standing: Standing;
-      wins: Match[];
-      draws: Match[];
-      losses: Match[];
-      upcoming: Match[];
-    }>(`/api/stats/team/${teamId}`),
+    queryFn: () =>
+      api.get<{
+        standing: Standing;
+        wins: Match[];
+        draws: Match[];
+        losses: Match[];
+        upcoming: Match[];
+      }>(`/api/stats/team/${teamId}`),
   });
   const d = detail.data;
   const tabs: Tab[] = ["overview", "wins", "draws", "losses", "upcoming"];
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in" onClick={onClose}>
-      <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col animate-in zoom-in-95"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-5 border-b border-border flex items-center justify-between">
           <div>
             <h3 className="text-xl font-bold">{team.data?.name || "Team"}</h3>
-            {team.data?.group && <p className="text-xs text-muted-foreground">Group {team.data.group}</p>}
+            {team.data?.group && (
+              <p className="text-xs text-muted-foreground">Group {team.data.group}</p>
+            )}
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-md hover:bg-secondary transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+          >
             <X className="size-4" />
           </button>
         </div>
@@ -162,7 +193,9 @@ function TeamModal({ teamId, onClose }: { teamId: string; onClose: () => void })
                 ["Points", d.standing?.points ?? 0],
               ].map(([l, v]) => (
                 <div key={l as string} className="bg-secondary rounded-md p-3">
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{l}</div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                    {l}
+                  </div>
                   <div className="text-xl font-bold tabular-nums">{v}</div>
                 </div>
               ))}
@@ -180,7 +213,9 @@ function MatchList({ list }: { list: Match[] }) {
   if (!list?.length) return <p className="text-sm text-muted-foreground">No matches.</p>;
   return (
     <div className="space-y-2">
-      {list.map((m) => <MatchCard key={m._id} m={m} />)}
+      {list.map((m) => (
+        <MatchCard key={m._id} m={m} />
+      ))}
     </div>
   );
 }

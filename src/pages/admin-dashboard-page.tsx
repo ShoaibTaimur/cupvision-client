@@ -1,74 +1,72 @@
-import { useEffect, useState } from "react"
-import { Navigate } from "react-router-dom"
-import { apiRequest } from "@/lib/api"
-import { clearStoredAdminToken, getStoredAdminToken } from "@/lib/auth"
-import { SectionCard } from "@/components/section-card"
+import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { apiRequest } from "@/lib/api";
+import { clearStoredAdminToken, getStoredAdminToken } from "@/lib/auth";
+import { SectionCard } from "@/components/section-card";
 
 type AdminMeResponse = {
   admin: {
-    id: string
-    username: string
-  }
-}
+    id: string;
+    username: string;
+  };
+};
 
 type AdminSummaryResponse = {
-  message: string
-  modules: string[]
-}
+  message: string;
+  modules: string[];
+};
 
 export function AdminDashboardPage() {
-  const token = getStoredAdminToken()
-  const [adminName, setAdminName] = useState<string | null>(null)
-  const [modules, setModules] = useState<string[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const token = getStoredAdminToken();
+  const [adminName, setAdminName] = useState<string | null>(null);
+  const [modules, setModules] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
-      return
+      return;
     }
 
-    let isActive = true
+    let isActive = true;
 
     async function loadAdminData() {
       try {
         const [me, summary] = await Promise.all([
           apiRequest<AdminMeResponse>("/api/admin/me", { token }),
           apiRequest<AdminSummaryResponse>("/api/admin/summary", { token }),
-        ])
+        ]);
 
         if (!isActive) {
-          return
+          return;
         }
 
-        setAdminName(me.admin.username)
-        setModules(summary.modules)
+        setAdminName(me.admin.username);
+        setModules(summary.modules);
       } catch (requestError) {
         if (!isActive) {
-          return
+          return;
         }
 
-        clearStoredAdminToken()
+        clearStoredAdminToken();
         setError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Failed to load admin data"
-        )
+          requestError instanceof Error ? requestError.message : "Failed to load admin data",
+        );
       }
     }
 
-    void loadAdminData()
+    void loadAdminData();
 
     return () => {
-      isActive = false
-    }
-  }, [token])
+      isActive = false;
+    };
+  }, [token]);
 
   if (!token) {
-    return <Navigate to="/admin/login" replace />
+    return <Navigate to="/admin/login" replace />;
   }
 
   if (error) {
-    return <Navigate to="/admin/login" replace state={{ error }} />
+    return <Navigate to="/admin/login" replace state={{ error }} />;
   }
 
   return (
@@ -89,5 +87,5 @@ export function AdminDashboardPage() {
         </div>
       </SectionCard>
     </div>
-  )
+  );
 }

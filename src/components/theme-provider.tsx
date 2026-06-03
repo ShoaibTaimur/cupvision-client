@@ -1,51 +1,49 @@
 /* eslint-disable react-refresh/only-export-components */
-import * as React from "react"
+import * as React from "react";
 
-type Theme = "dark" | "light"
+type Theme = "dark" | "light";
 
 type ThemeProviderProps = {
-  children: React.ReactNode
-  defaultTheme?: Theme
-  storageKey?: string
-  disableTransitionOnChange?: boolean
-}
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+  disableTransitionOnChange?: boolean;
+};
 
 type ThemeProviderState = {
-  theme: Theme
-  setTheme: (theme: Theme) => void
-}
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
 
-const THEME_VALUES: Theme[] = ["dark", "light"]
+const THEME_VALUES: Theme[] = ["dark", "light"];
 
-const ThemeProviderContext = React.createContext<
-  ThemeProviderState | undefined
->(undefined)
+const ThemeProviderContext = React.createContext<ThemeProviderState | undefined>(undefined);
 
 function isTheme(value: string | null): value is Theme {
   if (value === null) {
-    return false
+    return false;
   }
 
-  return THEME_VALUES.includes(value as Theme)
+  return THEME_VALUES.includes(value as Theme);
 }
 
 function disableTransitionsTemporarily() {
-  const style = document.createElement("style")
+  const style = document.createElement("style");
   style.appendChild(
     document.createTextNode(
-      "*,*::before,*::after{-webkit-transition:none!important;transition:none!important}"
-    )
-  )
-  document.head.appendChild(style)
+      "*,*::before,*::after{-webkit-transition:none!important;transition:none!important}",
+    ),
+  );
+  document.head.appendChild(style);
 
   return () => {
-    window.getComputedStyle(document.body)
+    window.getComputedStyle(document.body);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        style.remove()
-      })
-    })
-  }
+        style.remove();
+      });
+    });
+  };
 }
 
 export function ThemeProvider({
@@ -56,89 +54,87 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = React.useState<Theme>(() => {
-    const storedTheme = localStorage.getItem(storageKey)
+    const storedTheme = localStorage.getItem(storageKey);
     if (isTheme(storedTheme)) {
-      return storedTheme
+      return storedTheme;
     }
 
-    return defaultTheme
-  })
+    return defaultTheme;
+  });
 
   const setTheme = React.useCallback(
     (nextTheme: Theme) => {
-      localStorage.setItem(storageKey, nextTheme)
-      setThemeState(nextTheme)
+      localStorage.setItem(storageKey, nextTheme);
+      setThemeState(nextTheme);
     },
-    [storageKey]
-  )
+    [storageKey],
+  );
 
   const applyTheme = React.useCallback(
     (nextTheme: Theme) => {
-      const root = document.documentElement
-      const restoreTransitions = disableTransitionOnChange
-        ? disableTransitionsTemporarily()
-        : null
+      const root = document.documentElement;
+      const restoreTransitions = disableTransitionOnChange ? disableTransitionsTemporarily() : null;
 
-      root.classList.remove("light", "dark")
-      root.classList.add(nextTheme)
+      root.classList.remove("light", "dark");
+      root.classList.add(nextTheme);
 
       if (restoreTransitions) {
-        restoreTransitions()
+        restoreTransitions();
       }
     },
-    [disableTransitionOnChange]
-  )
+    [disableTransitionOnChange],
+  );
 
   React.useEffect(() => {
-    applyTheme(theme)
-  }, [theme, applyTheme])
+    applyTheme(theme);
+  }, [theme, applyTheme]);
 
   React.useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.storageArea !== localStorage) {
-        return
+        return;
       }
 
       if (event.key !== storageKey) {
-        return
+        return;
       }
 
       if (isTheme(event.newValue)) {
-        setThemeState(event.newValue)
-        return
+        setThemeState(event.newValue);
+        return;
       }
 
-      setThemeState(defaultTheme)
-    }
+      setThemeState(defaultTheme);
+    };
 
-    window.addEventListener("storage", handleStorageChange)
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange)
-    }
-  }, [defaultTheme, storageKey])
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [defaultTheme, storageKey]);
 
   const value = React.useMemo(
     () => ({
       theme,
       setTheme,
     }),
-    [theme, setTheme]
-  )
+    [theme, setTheme],
+  );
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>
       {children}
     </ThemeProviderContext.Provider>
-  )
+  );
 }
 
 export const useTheme = () => {
-  const context = React.useContext(ThemeProviderContext)
+  const context = React.useContext(ThemeProviderContext);
 
   if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider")
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
 
-  return context
-}
+  return context;
+};

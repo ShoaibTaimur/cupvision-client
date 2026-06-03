@@ -10,9 +10,15 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "CupVision — FIFA World Cup 2026 Tracker" },
-      { name: "description", content: "Live matches, scoreboard and team statistics for the 2026 World Cup." },
+      {
+        name: "description",
+        content: "Live matches, scoreboard and team statistics for the 2026 World Cup.",
+      },
       { property: "og:title", content: "CupVision — FIFA World Cup 2026 Tracker" },
-      { property: "og:description", content: "Live matches, scoreboard and team statistics for the 2026 World Cup." },
+      {
+        property: "og:description",
+        content: "Live matches, scoreboard and team statistics for the 2026 World Cup.",
+      },
     ],
   }),
   component: Home,
@@ -69,14 +75,20 @@ function Home() {
             Track. <span className="text-primary">Analyze.</span> Follow.
           </h1>
           <p className="mt-4 text-muted-foreground max-w-2xl">
-            Every match, every team, every result — the unofficial companion to the 2026
-            World Cup. Live status, group standings and a full chronological timeline.
+            Every match, every team, every result — the unofficial companion to the 2026 World Cup.
+            Live status, group standings and a full chronological timeline.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link to="/matches" className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors">
+            <Link
+              to="/matches"
+              className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
               Browse matches <ChevronRight className="size-4" />
             </Link>
-            <Link to="/scoreboard" className="inline-flex items-center gap-1.5 border border-border rounded-md px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors">
+            <Link
+              to="/scoreboard"
+              className="inline-flex items-center gap-1.5 border border-border rounded-md px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
+            >
               View scoreboard
             </Link>
           </div>
@@ -110,7 +122,8 @@ function Home() {
           ) : upcoming ? (
             <div>
               <div className="text-sm text-muted-foreground">
-                {upcoming.homeTeam?.name} <span className="opacity-70">vs</span> {upcoming.awayTeam?.name}
+                {upcoming.homeTeam?.name} <span className="opacity-70">vs</span>{" "}
+                {upcoming.awayTeam?.name}
               </div>
               <div className="text-xs text-muted-foreground mb-3">
                 {upcoming.date} · {upcoming.time} · {upcoming.stadium}
@@ -124,8 +137,12 @@ function Home() {
                     ["Sec", cd.seconds],
                   ].map(([l, v]) => (
                     <div key={l as string} className="bg-secondary rounded-md py-2">
-                      <div className="text-2xl font-bold tabular-nums">{String(v).padStart(2, "0")}</div>
-                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{l}</div>
+                      <div className="text-2xl font-bold tabular-nums">
+                        {String(v).padStart(2, "0")}
+                      </div>
+                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {l}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -157,7 +174,7 @@ function Home() {
                 <s.icon className="size-4" />
               </div>
               <div className="text-2xl font-bold mt-1 tabular-nums">
-                {stats.isLoading ? "—" : s.value ?? 0}
+                {stats.isLoading ? "—" : (s.value ?? 0)}
               </div>
             </div>
           ))}
@@ -168,15 +185,21 @@ function Home() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         <div className="flex items-end justify-between mb-4">
           <h2 className="text-xl font-semibold">Recent results</h2>
-          <Link to="/timeline" className="text-sm text-primary hover:underline">View timeline</Link>
+          <Link to="/timeline" className="text-sm text-primary hover:underline">
+            View timeline
+          </Link>
         </div>
         {matches.isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-28" />
+            ))}
           </div>
         ) : recent.length ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {recent.map((m) => <MatchCard key={m._id} m={m} />)}
+            {recent.map((m) => (
+              <MatchCard key={m._id} m={m} />
+            ))}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">No completed matches yet.</p>

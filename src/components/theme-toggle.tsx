@@ -1,8 +1,8 @@
-import { Moon, SunMedium } from "lucide-react"
-import { useTheme } from "./theme-provider"
+import { Moon, SunMedium } from "lucide-react";
+import { useTheme } from "./theme-provider";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme } = useTheme();
 
   return (
     <button
@@ -13,5 +13,5 @@ export function ThemeToggle() {
     >
       {theme === "dark" ? <SunMedium size={18} /> : <Moon size={18} />}
     </button>
-  )
+  );
 }

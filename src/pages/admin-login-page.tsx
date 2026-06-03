@@ -1,50 +1,46 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { apiRequest } from "@/lib/api"
-import { storeAdminToken } from "@/lib/auth"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest } from "@/lib/api";
+import { storeAdminToken } from "@/lib/auth";
 
 type LoginResponse = {
-  token: string
+  token: string;
   admin: {
-    id: string
-    username: string
-  }
-}
+    id: string;
+    username: string;
+  };
+};
 
 export function AdminLoginPage() {
-  const navigate = useNavigate()
-  const [username, setUsername] = useState("admin")
-  const [password, setPassword] = useState("admin123")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("admin123");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
 
     try {
       const data = await apiRequest<LoginResponse>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ username, password }),
-      })
+      });
 
-      storeAdminToken(data.token)
-      navigate("/admin")
+      storeAdminToken(data.token);
+      navigate("/admin");
     } catch (requestError) {
-      setError(
-        requestError instanceof Error ? requestError.message : "Login failed"
-      )
+      setError(requestError instanceof Error ? requestError.message : "Login failed");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
   return (
     <div className="mx-auto max-w-md rounded-[2rem] border border-white/10 bg-slate-950/60 p-8 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
-      <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">
-        Admin Access
-      </p>
+      <p className="text-sm uppercase tracking-[0.35em] text-cyan-300/80">Admin Access</p>
       <h2 className="mt-3 text-3xl font-semibold text-white">Login</h2>
       <p className="mt-3 text-sm leading-6 text-zinc-300">
         Default bootstrap account auto-creates when `admins` collection empty.
@@ -78,5 +74,5 @@ export function AdminLoginPage() {
         </button>
       </form>
     </div>
-  )
+  );
 }

@@ -129,7 +129,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </header>
 
       {/* Mobile slide-in drawer (portaled) */}
-      {open && typeof document !== "undefined" &&
+      {open &&
+        typeof document !== "undefined" &&
         createPortal(
           <div className="md:hidden fixed inset-0 z-[100] overflow-hidden">
             <div

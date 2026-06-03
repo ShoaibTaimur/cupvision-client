@@ -9,7 +9,10 @@ export const Route = createFileRoute("/timeline")({
   head: () => ({
     meta: [
       { title: "Timeline — CupVision" },
-      { name: "description", content: "Chronological timeline of every match in the 2026 World Cup." },
+      {
+        name: "description",
+        content: "Chronological timeline of every match in the 2026 World Cup.",
+      },
       { property: "og:title", content: "Timeline — CupVision" },
       { property: "og:description", content: "Every World Cup 2026 match in chronological order." },
     ],
@@ -24,9 +27,9 @@ function TimelinePage() {
   });
 
   const grouped = useMemo(() => {
-    const list = (matches.data || []).slice().sort((a, b) =>
-      `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`)
-    );
+    const list = (matches.data || [])
+      .slice()
+      .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
     const map = new Map<string, Match[]>();
     for (const m of list) {
       if (!map.has(m.date)) map.set(m.date, []);
@@ -51,7 +54,9 @@ function TimelinePage() {
               <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-primary ring-4 ring-background" />
               <div className="text-sm font-semibold mb-3">{date}</div>
               <div className="grid md:grid-cols-2 gap-3">
-                {items.map((m) => <MatchCard key={m._id} m={m} />)}
+                {items.map((m) => (
+                  <MatchCard key={m._id} m={m} />
+                ))}
               </div>
             </div>
           ))}

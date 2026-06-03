@@ -1,8 +1,8 @@
 type MetricCardProps = {
-  label: string
-  value: string
-  hint: string
-}
+  label: string;
+  value: string;
+  hint: string;
+};
 
 export function MetricCard({ label, value, hint }: MetricCardProps) {
   return (
@@ -11,5 +11,5 @@ export function MetricCard({ label, value, hint }: MetricCardProps) {
       <p className="mt-4 text-4xl font-semibold text-white">{value}</p>
       <p className="mt-2 text-sm text-zinc-300">{hint}</p>
     </article>
-  )
+  );
 }

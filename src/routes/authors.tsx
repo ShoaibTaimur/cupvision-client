@@ -29,17 +29,27 @@ function AuthorsPage() {
 
       {authors.isLoading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-64" />
+          ))}
         </div>
       ) : authors.data?.length === 0 ? (
         <p className="text-sm text-muted-foreground">No authors added yet.</p>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {authors.data?.map((a) => (
-            <div key={a._id} className="bg-card border border-border rounded-lg p-5 hover:border-primary/40 transition-colors">
+            <div
+              key={a._id}
+              className="bg-card border border-border rounded-lg p-5 hover:border-primary/40 transition-colors"
+            >
               <div className="size-20 rounded-full bg-secondary overflow-hidden mb-4 flex items-center justify-center">
                 {a.image ? (
-                  <img src={a.image} alt={a.name} className="size-full object-cover" loading="lazy" />
+                  <img
+                    src={a.image}
+                    alt={a.name}
+                    className="size-full object-cover"
+                    loading="lazy"
+                  />
                 ) : (
                   <User className="size-8 text-muted-foreground" />
                 )}
@@ -48,9 +58,39 @@ function AuthorsPage() {
               <p className="text-xs text-primary mb-2">{a.role}</p>
               {a.bio && <p className="text-sm text-muted-foreground mb-3">{a.bio}</p>}
               <div className="flex gap-2 mt-3">
-                {a.github && <a href={a.github} target="_blank" rel="noreferrer" className="p-1.5 rounded-md hover:bg-secondary transition-colors" aria-label="GitHub"><Github className="size-4" /></a>}
-                {a.linkedin && <a href={a.linkedin} target="_blank" rel="noreferrer" className="p-1.5 rounded-md hover:bg-secondary transition-colors" aria-label="LinkedIn"><Linkedin className="size-4" /></a>}
-                {a.portfolio && <a href={a.portfolio} target="_blank" rel="noreferrer" className="p-1.5 rounded-md hover:bg-secondary transition-colors" aria-label="Portfolio"><Globe className="size-4" /></a>}
+                {a.github && (
+                  <a
+                    href={a.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+                    aria-label="GitHub"
+                  >
+                    <Github className="size-4" />
+                  </a>
+                )}
+                {a.linkedin && (
+                  <a
+                    href={a.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="size-4" />
+                  </a>
+                )}
+                {a.portfolio && (
+                  <a
+                    href={a.portfolio}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1.5 rounded-md hover:bg-secondary transition-colors"
+                    aria-label="Portfolio"
+                  >
+                    <Globe className="size-4" />
+                  </a>
+                )}
               </div>
             </div>
           ))}

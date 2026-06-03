@@ -26,7 +26,15 @@ async function request<T>(path: string, opts: RequestInit = {}, auth = false): P
   }
   const res = await fetch(`${API_URL}${path}`, { ...opts, headers });
   const text = await res.text();
-  const data = text ? (() => { try { return JSON.parse(text); } catch { return text; } })() : null;
+  const data = text
+    ? (() => {
+        try {
+          return JSON.parse(text);
+        } catch {
+          return text;
+        }
+      })()
+    : null;
   if (!res.ok) {
     const msg = (data && (data as any).error) || res.statusText || "Request failed";
     throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
@@ -35,13 +43,17 @@ async function request<T>(path: string, opts: RequestInit = {}, auth = false): P
 }
 
 export const api = {
-  get: <T,>(p: string) => request<T>(p),
-  post: <T,>(p: string, body?: any, auth = false) =>
-    request<T>(p, { method: "POST", body: body instanceof FormData ? body : JSON.stringify(body || {}) }, auth),
-  put: <T,>(p: string, body?: any) =>
+  get: <T>(p: string) => request<T>(p),
+  post: <T>(p: string, body?: any, auth = false) =>
+    request<T>(
+      p,
+      { method: "POST", body: body instanceof FormData ? body : JSON.stringify(body || {}) },
+      auth,
+    ),
+  put: <T>(p: string, body?: any) =>
     request<T>(p, { method: "PUT", body: JSON.stringify(body || {}) }, true),
-  del: <T,>(p: string) => request<T>(p, { method: "DELETE" }, true),
-  authed: <T,>(p: string) => request<T>(p, {}, true),
+  del: <T>(p: string) => request<T>(p, { method: "DELETE" }, true),
+  authed: <T>(p: string) => request<T>(p, {}, true),
 };
 
 export { API_URL };
@@ -66,13 +78,7 @@ export interface Match {
   city: string;
   stage: string;
   group?: string;
-  status:
-    | "scheduled"
-    | "live"
-    | "awaiting_result"
-    | "completed"
-    | "cancelled"
-    | "postponed";
+  status: "scheduled" | "live" | "awaiting_result" | "completed" | "cancelled" | "postponed";
   homeScore?: number;
   awayScore?: number;
   winnerTeamId?: string | null;
