@@ -1,11 +1,11 @@
-import { MetricCard } from "@/components/metric-card"
-import { SectionCard } from "@/components/section-card"
+import { MetricCard } from "@/components/metric-card";
+import { SectionCard } from "@/components/section-card";
 
 const metrics = [
   { label: "Live Match", value: "0", hint: "Backend ready for live status feed." },
   { label: "Tracked Teams", value: "48", hint: "Structure aligned with World Cup 2026." },
   { label: "Import Flow", value: "CSV", hint: "Single-file admin import planned." },
-]
+];
 
 export function HomePage() {
   return (
@@ -19,8 +19,8 @@ export function HomePage() {
             One place for fixtures, results, standings, timeline, admin control.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-200">
-            Frontend shell live. Backend auth live. Next phases: collections, CSV
-            import, match management, public data views.
+            Frontend shell live. Backend auth live. Next phases: collections, CSV import, match
+            management, public data views.
           </p>
         </div>
         <div className="grid gap-4">
@@ -41,5 +41,5 @@ export function HomePage() {
         />
       </div>
     </div>
-  )
+  );
 }

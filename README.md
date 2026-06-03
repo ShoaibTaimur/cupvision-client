@@ -81,18 +81,18 @@ Visit `/admin/login` and use the credentials you set in the backend `.env`
 Download the ready-to-use template from the Admin → Import page (or grab
 `public/matches-template.csv`). Columns:
 
-| Column | Required | Notes |
-|---|---|---|
-| `matchNumber` | yes | positive int, unique |
-| `homeTeam` | yes | auto-created if new |
-| `awayTeam` | yes | auto-created if new |
-| `date` | yes | `YYYY-MM-DD` |
-| `time` | yes | `HH:MM` (24-hour) |
-| `stadium` | yes | text |
-| `city` | yes | text |
-| `stage` | yes | e.g. `Group Stage`, `Round of 16` |
-| `group` | conditional | `A`–`L`, leave empty for knockouts |
-| `status` | yes | `scheduled` / `live` / `awaiting_result` / `completed` / `cancelled` / `postponed` |
+| Column        | Required    | Notes                                                                              |
+| ------------- | ----------- | ---------------------------------------------------------------------------------- |
+| `matchNumber` | yes         | positive int, unique                                                               |
+| `homeTeam`    | yes         | auto-created if new                                                                |
+| `awayTeam`    | yes         | auto-created if new                                                                |
+| `date`        | yes         | `YYYY-MM-DD`                                                                       |
+| `time`        | yes         | `HH:MM` (24-hour)                                                                  |
+| `stadium`     | yes         | text                                                                               |
+| `city`        | yes         | text                                                                               |
+| `stage`       | yes         | e.g. `Group Stage`, `Round of 16`                                                  |
+| `group`       | conditional | `A`–`L`, leave empty for knockouts                                                 |
+| `status`      | yes         | `scheduled` / `live` / `awaiting_result` / `completed` / `cancelled` / `postponed` |
 
 Workflow: upload → **Validate** (preview + errors) → **Confirm import**.
 
@@ -101,12 +101,14 @@ Workflow: upload → **Validate** (preview + errors) → **Confirm import**.
 ## API endpoints
 
 ### Public
+
 - `GET /api/teams`, `GET /api/teams/:id`
 - `GET /api/matches?status=&group=&q=`, `GET /api/matches/:id`
 - `GET /api/authors`
 - `GET /api/stats/scoreboard`, `GET /api/stats/team/:id`, `GET /api/stats/tournament`
 
 ### Admin (Bearer `ADMIN_TOKEN`)
+
 - `POST /api/auth/login` `{ username, password }` → `{ token }`
 - `POST/PUT/DELETE /api/teams`, `/api/matches`, `/api/authors`
 - `POST /api/matches/:id/result` `{ homeScore, awayScore }`

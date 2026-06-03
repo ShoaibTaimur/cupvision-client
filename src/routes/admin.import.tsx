@@ -42,7 +42,10 @@ function ImportPage() {
     setResult(null);
     try {
       const { ok, data } = await callAPI("/api/import/validate", file);
-      if (!ok) throw new Error(data?.error || `Server error. Check that your backend exposes POST /api/import/validate.`);
+      if (!ok)
+        throw new Error(
+          data?.error || `Server error. Check that your backend exposes POST /api/import/validate.`,
+        );
       const safe: ValidateResponse = {
         valid: !!data?.valid,
         errors: Array.isArray(data?.errors) ? data.errors : [],
@@ -79,7 +82,9 @@ function ImportPage() {
   return (
     <AdminShell>
       <h1 className="text-2xl font-bold mb-1">CSV Import</h1>
-      <p className="text-sm text-muted-foreground mb-6">Bulk-upload matches. Teams are auto-created from unique names.</p>
+      <p className="text-sm text-muted-foreground mb-6">
+        Bulk-upload matches. Teams are auto-created from unique names.
+      </p>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6">
         <div className="space-y-4">
@@ -87,9 +92,15 @@ function ImportPage() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="font-semibold">1. Get the template</h2>
-                <p className="text-xs text-muted-foreground">Open in Excel/Sheets, fill in your matches, save as CSV.</p>
+                <p className="text-xs text-muted-foreground">
+                  Open in Excel/Sheets, fill in your matches, save as CSV.
+                </p>
               </div>
-              <a href="/matches-template.csv" download className="inline-flex items-center gap-1.5 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-md text-sm">
+              <a
+                href="/matches-template.csv"
+                download
+                className="inline-flex items-center gap-1.5 bg-secondary hover:bg-secondary/80 text-secondary-foreground px-3 py-2 rounded-md text-sm"
+              >
                 <Download className="size-4" /> Download template
               </a>
             </div>
@@ -103,15 +114,26 @@ function ImportPage() {
               <input
                 type="file"
                 accept=".csv,text/csv"
-                onChange={(e) => { setFile(e.target.files?.[0] || null); setResult(null); }}
+                onChange={(e) => {
+                  setFile(e.target.files?.[0] || null);
+                  setResult(null);
+                }}
                 className="hidden"
               />
             </label>
             <div className="flex gap-2 mt-3">
-              <button disabled={!file || validating} onClick={onValidate} className="flex-1 bg-secondary hover:bg-secondary/80 rounded-md py-2 text-sm font-medium disabled:opacity-50">
+              <button
+                disabled={!file || validating}
+                onClick={onValidate}
+                className="flex-1 bg-secondary hover:bg-secondary/80 rounded-md py-2 text-sm font-medium disabled:opacity-50"
+              >
                 {validating ? "Validating..." : "3. Validate"}
               </button>
-              <button disabled={!file || !result?.valid || committing} onClick={onCommit} className="flex-1 bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
+              <button
+                disabled={!file || !result?.valid || committing}
+                onClick={onCommit}
+                className="flex-1 bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+              >
                 {committing ? "Importing..." : "4. Confirm import"}
               </button>
             </div>
@@ -120,30 +142,53 @@ function ImportPage() {
           {result && (
             <div className="bg-card border border-border rounded-lg p-5">
               <div className="flex items-center gap-2 mb-3">
-                {result.valid ? <CheckCircle2 className="size-5 text-primary" /> : <AlertCircle className="size-5 text-destructive" />}
-                <h2 className="font-semibold">{result.valid ? `${result.totalRows} rows valid` : `${result.errors.length} errors`}</h2>
+                {result.valid ? (
+                  <CheckCircle2 className="size-5 text-primary" />
+                ) : (
+                  <AlertCircle className="size-5 text-destructive" />
+                )}
+                <h2 className="font-semibold">
+                  {result.valid
+                    ? `${result.totalRows} rows valid`
+                    : `${result.errors.length} errors`}
+                </h2>
               </div>
               {result.errors.length > 0 && (
                 <ul className="text-sm text-destructive-foreground bg-destructive/10 rounded-md p-3 max-h-48 overflow-y-auto space-y-1">
-                  {result.errors.map((e, i) => <li key={i}>• {e}</li>)}
+                  {result.errors.map((e, i) => (
+                    <li key={i}>• {e}</li>
+                  ))}
                 </ul>
               )}
               {result.newTeams.length > 0 && (
                 <div className="mt-3 text-xs text-muted-foreground">
-                  <strong>{result.newTeams.length}</strong> unique team names referenced. Any not in DB will be auto-created.
+                  <strong>{result.newTeams.length}</strong> unique team names referenced. Any not in
+                  DB will be auto-created.
                 </div>
               )}
               {result.preview.length > 0 && (
                 <div className="mt-4 overflow-x-auto">
-                  <div className="text-xs text-muted-foreground mb-2">Preview (first {result.preview.length})</div>
+                  <div className="text-xs text-muted-foreground mb-2">
+                    Preview (first {result.preview.length})
+                  </div>
                   <table className="w-full text-xs">
                     <thead className="text-muted-foreground border-b border-border">
-                      <tr>{Object.keys(result.preview[0]).map((k) => <th key={k} className="px-2 py-1 text-left">{k}</th>)}</tr>
+                      <tr>
+                        {Object.keys(result.preview[0]).map((k) => (
+                          <th key={k} className="px-2 py-1 text-left">
+                            {k}
+                          </th>
+                        ))}
+                      </tr>
                     </thead>
                     <tbody>
                       {result.preview.map((r, i) => (
                         <tr key={i} className="border-b border-border last:border-0">
-                          {Object.values(r).map((v, j) => <td key={j} className="px-2 py-1 whitespace-nowrap">{String(v)}</td>)}
+                          {Object.values(r).map((v, j) => (
+                            <td key={j} className="px-2 py-1 whitespace-nowrap">
+                              {String(v)}
+                            </td>
+                          ))}
                         </tr>
                       ))}
                     </tbody>
@@ -157,18 +202,53 @@ function ImportPage() {
         <aside className="bg-card border border-border rounded-lg p-5 h-fit text-xs">
           <h3 className="font-semibold text-sm mb-3">CSV format</h3>
           <table className="w-full">
-            <thead className="text-muted-foreground"><tr><th className="text-left py-1">Column</th><th className="text-left py-1">Notes</th></tr></thead>
+            <thead className="text-muted-foreground">
+              <tr>
+                <th className="text-left py-1">Column</th>
+                <th className="text-left py-1">Notes</th>
+              </tr>
+            </thead>
             <tbody className="text-muted-foreground">
-              <tr><td className="font-mono">matchNumber</td><td>positive int, unique</td></tr>
-              <tr><td className="font-mono">homeTeam</td><td>auto-created if new</td></tr>
-              <tr><td className="font-mono">awayTeam</td><td>auto-created if new</td></tr>
-              <tr><td className="font-mono">date</td><td>YYYY-MM-DD</td></tr>
-              <tr><td className="font-mono">time</td><td>HH:MM (24h)</td></tr>
-              <tr><td className="font-mono">stadium</td><td>text</td></tr>
-              <tr><td className="font-mono">city</td><td>text</td></tr>
-              <tr><td className="font-mono">stage</td><td>e.g. Group Stage</td></tr>
-              <tr><td className="font-mono">group</td><td>A–L or empty</td></tr>
-              <tr><td className="font-mono">status</td><td>scheduled, live, awaiting_result, completed, cancelled, postponed</td></tr>
+              <tr>
+                <td className="font-mono">matchNumber</td>
+                <td>positive int, unique</td>
+              </tr>
+              <tr>
+                <td className="font-mono">homeTeam</td>
+                <td>auto-created if new</td>
+              </tr>
+              <tr>
+                <td className="font-mono">awayTeam</td>
+                <td>auto-created if new</td>
+              </tr>
+              <tr>
+                <td className="font-mono">date</td>
+                <td>YYYY-MM-DD</td>
+              </tr>
+              <tr>
+                <td className="font-mono">time</td>
+                <td>HH:MM (24h)</td>
+              </tr>
+              <tr>
+                <td className="font-mono">stadium</td>
+                <td>text</td>
+              </tr>
+              <tr>
+                <td className="font-mono">city</td>
+                <td>text</td>
+              </tr>
+              <tr>
+                <td className="font-mono">stage</td>
+                <td>e.g. Group Stage</td>
+              </tr>
+              <tr>
+                <td className="font-mono">group</td>
+                <td>A–L or empty</td>
+              </tr>
+              <tr>
+                <td className="font-mono">status</td>
+                <td>scheduled, live, awaiting_result, completed, cancelled, postponed</td>
+              </tr>
             </tbody>
           </table>
         </aside>

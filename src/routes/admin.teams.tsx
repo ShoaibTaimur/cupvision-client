@@ -80,34 +80,79 @@ function TeamsAdmin() {
                     <td className="px-3 py-2 font-medium">{t.name}</td>
                     <td className="px-3 py-2 text-muted-foreground">{t.group || "—"}</td>
                     <td className="px-3 py-2 text-right space-x-1">
-                      <button onClick={() => startEdit(t)} className="p-1.5 rounded-md hover:bg-secondary"><Pencil className="size-4" /></button>
-                      <button onClick={() => confirm(`Delete ${t.name}?`) && del.mutate(t._id)} className="p-1.5 rounded-md hover:bg-destructive/20 text-destructive"><Trash2 className="size-4" /></button>
+                      <button
+                        onClick={() => startEdit(t)}
+                        className="p-1.5 rounded-md hover:bg-secondary"
+                      >
+                        <Pencil className="size-4" />
+                      </button>
+                      <button
+                        onClick={() => confirm(`Delete ${t.name}?`) && del.mutate(t._id)}
+                        className="p-1.5 rounded-md hover:bg-destructive/20 text-destructive"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
                 {list.data?.length === 0 && (
-                  <tr><td colSpan={3} className="px-3 py-8 text-center text-muted-foreground">No teams.</td></tr>
+                  <tr>
+                    <td colSpan={3} className="px-3 py-8 text-center text-muted-foreground">
+                      No teams.
+                    </td>
+                  </tr>
                 )}
               </tbody>
             </table>
           )}
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="bg-card border border-border rounded-lg p-5 space-y-3 h-fit">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            save.mutate();
+          }}
+          className="bg-card border border-border rounded-lg p-5 space-y-3 h-fit"
+        >
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">{editing ? "Edit team" : "New team"}</h2>
-            {editing && <button type="button" onClick={startNew} className="text-xs text-muted-foreground hover:text-foreground"><Plus className="size-3 inline" /> New</button>}
+            {editing && (
+              <button
+                type="button"
+                onClick={startNew}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                <Plus className="size-3 inline" /> New
+              </button>
+            )}
           </div>
           <Field label="Name *">
-            <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm" />
+            <input
+              required
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+            />
           </Field>
           <Field label="Group (A-L)">
-            <input value={form.group} onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })} maxLength={1} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm" />
+            <input
+              value={form.group}
+              onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
+              maxLength={1}
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+            />
           </Field>
           <Field label="Flag URL">
-            <input value={form.flag} onChange={(e) => setForm({ ...form, flag: e.target.value })} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm" />
+            <input
+              value={form.flag}
+              onChange={(e) => setForm({ ...form, flag: e.target.value })}
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+            />
           </Field>
-          <button disabled={save.isPending} className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50">
+          <button
+            disabled={save.isPending}
+            className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+          >
             {save.isPending ? "Saving..." : editing ? "Update" : "Create"}
           </button>
         </form>

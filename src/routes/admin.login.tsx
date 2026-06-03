@@ -32,7 +32,10 @@ function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-      <form onSubmit={onSubmit} className="w-full max-w-sm bg-card border border-border rounded-lg p-6 space-y-4">
+      <form
+        onSubmit={onSubmit}
+        className="w-full max-w-sm bg-card border border-border rounded-lg p-6 space-y-4"
+      >
         <div className="text-center mb-2">
           <div className="mx-auto size-12 rounded-lg bg-primary flex items-center justify-center text-primary-foreground mb-3">
             <Trophy className="size-6" />

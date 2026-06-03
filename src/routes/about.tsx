@@ -22,9 +22,9 @@ function AboutPage() {
         <div>
           <h2 className="text-lg font-semibold mb-2">Purpose</h2>
           <p className="text-sm text-muted-foreground">
-            CupVision is a fan-built companion for the 2026 FIFA World Cup. It provides
-            live match status, group standings, and a full timeline — all from data
-            curated by our admins (no FIFA APIs).
+            CupVision is a fan-built companion for the 2026 FIFA World Cup. It provides live match
+            status, group standings, and a full timeline — all from data curated by our admins (no
+            FIFA APIs).
           </p>
         </div>
 

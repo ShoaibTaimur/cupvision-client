@@ -9,11 +9,15 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { inject } from "@vercel/analytics";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteFooter, SiteHeader } from "../components/site-chrome";
 import { Toaster } from "sonner";
+
+// Inject Vercel Analytics
+inject();
 
 function NotFoundComponent() {
   return (
@@ -81,10 +85,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "CupVision — Track. Analyze. Follow." },
-      { name: "description", content: "Live FIFA World Cup 2026 tracker: matches, scoreboard, statistics and timeline." },
+      {
+        name: "description",
+        content: "Live FIFA World Cup 2026 tracker: matches, scoreboard, statistics and timeline.",
+      },
       { name: "author", content: "CupVision" },
       { property: "og:title", content: "CupVision — FIFA World Cup 2026 Tracker" },
-      { property: "og:description", content: "Match tracking, team rankings and statistics for the 2026 World Cup." },
+      {
+        property: "og:description",
+        content: "Match tracking, team rankings and statistics for the 2026 World Cup.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
