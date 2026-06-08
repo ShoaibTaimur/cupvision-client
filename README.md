@@ -60,6 +60,7 @@ ADMIN_USERNAME=replace_with_your_own_username
 ADMIN_PASSWORD=replace_with_your_own_password
 ADMIN_TOKEN=replace-with-long-random-string
 AUTH_TOKEN_SECRET=replace-with-secret-string
+CHANNEL_PROXY_SECRET=replace-with-long-random-string
 ```
 
 ### `client/.env`
@@ -71,6 +72,7 @@ VITE_API_URL=http://localhost:5000
 Notes:
 
 - `ADMIN_TOKEN` is bearer token returned by admin login.
+- `CHANNEL_PROXY_SECRET` encrypts relay URLs for proxied channel playback. Set strong unique value in local env and hosting env.
 - `CLIENT_URL` must allow frontend origin in server CORS config.
 - Never commit real secrets.
 

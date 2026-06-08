@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 
 const NAV = [
   { to: "/", label: "Home" },
+  { to: "/watch", label: "Watch" },
   { to: "/matches", label: "Matches" },
   { to: "/scoreboard", label: "Scoreboard" },
   { to: "/timeline", label: "Timeline" },

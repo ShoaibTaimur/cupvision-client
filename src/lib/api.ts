@@ -95,6 +95,28 @@ export interface Author {
   linkedin?: string;
   portfolio?: string;
 }
+export interface Channel {
+  _id: string;
+  name: string;
+  category?: string;
+  badge?: string;
+  description?: string;
+  poster?: string;
+  accent?: string;
+  streamType: "hls" | "file";
+  hideSource?: boolean;
+  forceProxy?: boolean;
+  isFeatured?: boolean;
+  isPublished?: boolean;
+  sortOrder?: number;
+  proxyPlaybackUrl: string;
+  playbackUrl: string;
+}
+export interface AdminChannel extends Channel {
+  streamType: "hls" | "file" | "auto";
+  sourceUrl: string;
+  hideSource: boolean;
+}
 export interface Standing {
   teamId: string;
   team: Team;

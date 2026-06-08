@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WatchRouteImport } from './routes/watch'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as ScoreboardRouteImport } from './routes/scoreboard'
 import { Route as MatchesRouteImport } from './routes/matches'
@@ -20,8 +21,14 @@ import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminChannelsRouteImport } from './routes/admin.channels'
 import { Route as AdminAuthorsRouteImport } from './routes/admin.authors'
 
+const WatchRoute = WatchRouteImport.update({
+  id: '/watch',
+  path: '/watch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TimelineRoute = TimelineRouteImport.update({
   id: '/timeline',
   path: '/timeline',
@@ -77,6 +84,11 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/admin/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminChannelsRoute = AdminChannelsRouteImport.update({
+  id: '/admin/channels',
+  path: '/admin/channels',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuthorsRoute = AdminAuthorsRouteImport.update({
   id: '/admin/authors',
   path: '/admin/authors',
@@ -90,7 +102,9 @@ export interface FileRoutesByFullPath {
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
   '/timeline': typeof TimelineRoute
+  '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
+  '/admin/channels': typeof AdminChannelsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
@@ -104,7 +118,9 @@ export interface FileRoutesByTo {
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
   '/timeline': typeof TimelineRoute
+  '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
+  '/admin/channels': typeof AdminChannelsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
@@ -119,7 +135,9 @@ export interface FileRoutesById {
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
   '/timeline': typeof TimelineRoute
+  '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
+  '/admin/channels': typeof AdminChannelsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
@@ -135,7 +153,9 @@ export interface FileRouteTypes {
     | '/matches'
     | '/scoreboard'
     | '/timeline'
+    | '/watch'
     | '/admin/authors'
+    | '/admin/channels'
     | '/admin/dashboard'
     | '/admin/import'
     | '/admin/login'
@@ -149,7 +169,9 @@ export interface FileRouteTypes {
     | '/matches'
     | '/scoreboard'
     | '/timeline'
+    | '/watch'
     | '/admin/authors'
+    | '/admin/channels'
     | '/admin/dashboard'
     | '/admin/import'
     | '/admin/login'
@@ -163,7 +185,9 @@ export interface FileRouteTypes {
     | '/matches'
     | '/scoreboard'
     | '/timeline'
+    | '/watch'
     | '/admin/authors'
+    | '/admin/channels'
     | '/admin/dashboard'
     | '/admin/import'
     | '/admin/login'
@@ -178,7 +202,9 @@ export interface RootRouteChildren {
   MatchesRoute: typeof MatchesRoute
   ScoreboardRoute: typeof ScoreboardRoute
   TimelineRoute: typeof TimelineRoute
+  WatchRoute: typeof WatchRoute
   AdminAuthorsRoute: typeof AdminAuthorsRoute
+  AdminChannelsRoute: typeof AdminChannelsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminImportRoute: typeof AdminImportRoute
   AdminLoginRoute: typeof AdminLoginRoute
@@ -188,6 +214,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/watch': {
+      id: '/watch'
+      path: '/watch'
+      fullPath: '/watch'
+      preLoaderRoute: typeof WatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/timeline': {
       id: '/timeline'
       path: '/timeline'
@@ -265,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/channels': {
+      id: '/admin/channels'
+      path: '/admin/channels'
+      fullPath: '/admin/channels'
+      preLoaderRoute: typeof AdminChannelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/authors': {
       id: '/admin/authors'
       path: '/admin/authors'
@@ -282,7 +322,9 @@ const rootRouteChildren: RootRouteChildren = {
   MatchesRoute: MatchesRoute,
   ScoreboardRoute: ScoreboardRoute,
   TimelineRoute: TimelineRoute,
+  WatchRoute: WatchRoute,
   AdminAuthorsRoute: AdminAuthorsRoute,
+  AdminChannelsRoute: AdminChannelsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminImportRoute: AdminImportRoute,
   AdminLoginRoute: AdminLoginRoute,

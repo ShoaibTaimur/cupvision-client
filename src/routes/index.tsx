@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { api, Match } from "@/lib/api";
+import { api, Channel, Match } from "@/lib/api";
 import { MatchCard, LiveMatchCard } from "@/components/match-card";
 import { Skeleton } from "@/components/skeleton";
-import { Activity, CalendarClock, ChevronRight, Trophy, Users } from "lucide-react";
+import { Activity, CalendarClock, ChevronRight, PlayCircle, Radio, Trophy, Users } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,8 +49,13 @@ function Home() {
     queryKey: ["stats", "tournament"],
     queryFn: () => api.get<any>("/api/stats/tournament"),
   });
+  const channels = useQuery({
+    queryKey: ["channels"],
+    queryFn: () => api.get<Channel[]>("/api/channels"),
+  });
 
   const list = matches.data || [];
+  const featuredChannel = (channels.data || []).find((item) => item.isFeatured) || channels.data?.[0];
   const live = list.find((m) => m.status === "live");
   const upcoming = list
     .filter((m) => m.status === "scheduled")
@@ -96,6 +101,30 @@ function Home() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 grid lg:grid-cols-2 gap-6">
+        <Link
+          to="/watch"
+          className="group relative overflow-hidden rounded-lg border border-border bg-card p-6 transition-colors hover:bg-secondary/40 lg:col-span-2"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pointer-events-none" />
+          <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-primary">
+                <Radio className="size-3.5" /> New Watch Tab
+              </div>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
+                {featuredChannel ? `${featuredChannel.name} live now on CupVision.` : "Live channels now on CupVision."}
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+                {featuredChannel?.description ||
+                  "Open featured stream from homepage, switch channels fast, keep fans inside one responsive viewing flow."}
+              </p>
+            </div>
+            <div className="inline-flex items-center gap-2 self-start rounded-md border border-border bg-background/80 px-4 py-2 text-sm font-medium transition-colors group-hover:bg-background">
+              <PlayCircle className="size-4 text-primary" /> Watch now
+            </div>
+          </div>
+        </Link>
+
         {/* Live */}
         <div className="bg-card border border-border rounded-lg p-5">
           <div className="flex items-center gap-2 mb-4">

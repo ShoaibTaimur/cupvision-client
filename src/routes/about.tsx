@@ -32,6 +32,7 @@ function AboutPage() {
           <h2 className="text-lg font-semibold mb-2">Features</h2>
           <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
             <li>Match tracking with rich status (scheduled, live, completed, …)</li>
+            <li>Live watch tab powered by admin-managed channel publishing</li>
             <li>Dynamic group standings (no stored stats)</li>
             <li>Team statistics and per-team breakdown</li>
             <li>Search across teams, stadiums, cities and match numbers</li>

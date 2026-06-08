@@ -13,11 +13,13 @@ import {
   Menu,
   X,
   Home,
+  Radio,
 } from "lucide-react";
 
 const NAV = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/matches", label: "Matches", icon: Calendar },
+  { to: "/admin/channels", label: "Channels", icon: Radio },
   { to: "/admin/teams", label: "Teams", icon: Users },
   { to: "/admin/authors", label: "Authors", icon: UserCog },
   { to: "/admin/import", label: "Import CSV", icon: Upload },
