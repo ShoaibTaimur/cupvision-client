@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { PlayCircle, Radio, Tv } from "lucide-react";
+import { ExternalLink, PlayCircle, Radio, Tv } from "lucide-react";
 import { ChannelPlayer } from "@/components/channel-player";
 import { Skeleton } from "@/components/skeleton";
 import { api, type Channel } from "@/lib/api";
@@ -85,7 +85,11 @@ function WatchPage() {
             <Skeleton className="aspect-video rounded-[1.5rem]" />
           ) : current ? (
             <>
-              <ChannelPlayer channel={current} />
+              {current.useRedirect && current.redirectUrl ? (
+                <RedirectCard channel={current} />
+              ) : (
+                <ChannelPlayer channel={current} />
+              )}
               <div className="rounded-lg border border-border bg-card p-5">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="inline-flex rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
@@ -187,3 +191,42 @@ function EmptyState({ compact = false }: { compact?: boolean }) {
     </div>
   );
 }
+
+function RedirectCard({ channel }: { channel: Channel }) {
+  const label = channel.redirectLabel?.trim() || `Watch ${channel.name} on external site`;
+  return (
+    <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-primary/15 via-background to-accent/15">
+      <div
+        className="flex aspect-video w-full flex-col items-center justify-center gap-5 bg-black/40 p-8 text-center"
+        style={
+          channel.poster
+            ? {
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.85)), url(${channel.poster})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : undefined
+        }
+      >
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs uppercase tracking-[0.3em] text-primary">
+          <Radio className="size-3.5" /> External stream
+        </div>
+        <h3 className="text-2xl font-semibold text-white sm:text-3xl">{channel.name}</h3>
+        <p className="max-w-md text-sm leading-6 text-white/80">
+          This channel is hosted on an external site. Click below to open the live stream in a
+          new tab.
+        </p>
+        <a
+          href={channel.redirectUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-transform hover:scale-[1.02]"
+        >
+          <ExternalLink className="size-4" />
+          {label}
+        </a>
+      </div>
+    </div>
+  );
+}
+

@@ -25,6 +25,9 @@ const empty = {
   isFeatured: false,
   isPublished: true,
   sortOrder: 0,
+  useRedirect: false,
+  redirectUrl: "",
+  redirectLabel: "",
 };
 
 function ChannelsAdmin() {
@@ -75,6 +78,9 @@ function ChannelsAdmin() {
       isFeatured: !!channel.isFeatured,
       isPublished: channel.isPublished !== false,
       sortOrder: channel.sortOrder || 0,
+      useRedirect: !!channel.useRedirect,
+      redirectUrl: channel.redirectUrl || "",
+      redirectLabel: channel.redirectLabel || "",
     });
   }
 
@@ -287,6 +293,45 @@ function ChannelsAdmin() {
             pass through CupVision servers — zero proxy bandwidth. The source URL is visible to
             anyone who inspects the page network tab.
           </p>
+
+          <div className="space-y-3 rounded-md border border-border bg-background px-3 py-3">
+            <label className="flex items-center gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={form.useRedirect}
+                onChange={(e) => setForm({ ...form, useRedirect: e.target.checked })}
+              />
+              <span>Use external redirect (no embedded player)</span>
+            </label>
+            <p className="text-xs leading-5 text-muted-foreground">
+              When on, the watch page hides the player and shows a button that opens the link
+              below in a new tab. Use it to push viewers to an external site so no stream
+              requests hit your server.
+            </p>
+            {form.useRedirect ? (
+              <>
+                <Field label="Redirect URL *">
+                  <input
+                    type="url"
+                    required={form.useRedirect}
+                    value={form.redirectUrl}
+                    onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                    placeholder="https://example.com/live"
+                  />
+                </Field>
+                <Field label="Button label">
+                  <input
+                    value={form.redirectLabel}
+                    onChange={(e) => setForm({ ...form, redirectLabel: e.target.value })}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                    placeholder="Watch on external site"
+                  />
+                </Field>
+              </>
+            ) : null}
+          </div>
+
 
           <label className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-3 text-sm">
             <input

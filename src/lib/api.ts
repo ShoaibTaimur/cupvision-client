@@ -121,6 +121,9 @@ export interface Channel {
   isPublished?: boolean;
   sortOrder?: number;
   playbackUrl: string;
+  useRedirect?: boolean;
+  redirectUrl?: string;
+  redirectLabel?: string;
 }
 export interface AdminChannel extends Channel {
   streamType: "hls" | "file" | "auto";
