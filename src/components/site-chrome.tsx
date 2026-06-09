@@ -8,6 +8,7 @@ const NAV = [
   { to: "/watch", label: "Watch" },
   { to: "/matches", label: "Matches" },
   { to: "/scoreboard", label: "Scoreboard" },
+  { to: "/squads", label: "Squads" },
   { to: "/timeline", label: "Timeline" },
   { to: "/authors", label: "Authors" },
   { to: "/about", label: "About" },
@@ -53,32 +54,11 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {NAV.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              className={idleCls}
-              activeProps={{ className: activeCls }}
-              activeOptions={{ exact: n.to === "/" }}
-            >
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-
         <div className="flex items-center gap-2">
-          <Link
-            to="/admin/login"
-            className="hidden md:inline text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Admin
-          </Link>
-          {/* Mobile hamburger */}
+          {/* Universal hamburger */}
           <button
             onClick={() => setOpen(true)}
-            className="md:hidden inline-flex items-center justify-center size-10 rounded-md border border-border bg-card hover:bg-secondary transition-colors"
+            className="inline-flex items-center justify-center size-10 rounded-md border border-border bg-card hover:bg-secondary transition-colors"
             aria-label="Open menu"
           >
             <Menu className="size-5" />
@@ -86,11 +66,11 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {/* Mobile slide menu (portaled to body to escape header stacking context) */}
+      {/* Slide menu (portaled to body to escape header stacking context) */}
       {open &&
         typeof document !== "undefined" &&
         createPortal(
-          <div className="md:hidden fixed inset-0 z-[100] overflow-hidden">
+          <div className="fixed inset-0 z-[100] overflow-hidden">
             <div
               className={`absolute inset-0 bg-background/60 backdrop-blur-md ${closing ? "animate-out fade-out duration-300" : "animate-in fade-in duration-200"}`}
               onClick={closeMenu}

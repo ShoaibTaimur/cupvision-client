@@ -5,7 +5,9 @@ CupVision is full-stack FIFA World Cup 2026 tracker.
 It ships with:
 
 - Public site for matches, scoreboard, timeline, authors, about
-- Admin area for login, dashboard, teams, matches, authors, CSV import
+- Public squads page for team rosters and player roles
+- Live watch page for published channels
+- Admin area for login, dashboard, teams, matches, authors, players, CSV import
 - Backend API in `/server`
 - MongoDB Atlas storage
 
@@ -24,6 +26,7 @@ Frontend talks to backend through `VITE_API_URL`.
 - `client/` - frontend app
 - `server/` - API server
 - `client/public/matches-template.csv` - CSV import template
+- `client/public/players-template.csv` - squad/players CSV import template
 
 ## Local Setup
 
@@ -59,8 +62,6 @@ CLIENT_URL=http://localhost:5173
 ADMIN_USERNAME=replace_with_your_own_username
 ADMIN_PASSWORD=replace_with_your_own_password
 ADMIN_TOKEN=replace-with-long-random-string
-AUTH_TOKEN_SECRET=replace-with-secret-string
-CHANNEL_PROXY_SECRET=replace-with-long-random-string
 ```
 
 ### `client/.env`
@@ -71,8 +72,7 @@ VITE_API_URL=http://localhost:5000
 
 Notes:
 
-- `ADMIN_TOKEN` is bearer token returned by admin login.
-- `CHANNEL_PROXY_SECRET` encrypts relay URLs for proxied channel playback. Set strong unique value in local env and hosting env.
+- `ADMIN_TOKEN` is the shared admin bearer token returned by login and stored in browser `localStorage` for admin requests.
 - `CLIENT_URL` must allow frontend origin in server CORS config.
 - Never commit real secrets.
 
@@ -84,16 +84,23 @@ Notes:
 - Timeline page with chronological match list
 - Authors page
 - About page
+- Squads page with roster filters by team and position
+- Watch page for published live channels
 - Admin login and admin workspace
-- CSV import with validate/commit flow
+- Match CSV import with validate/commit flow
+- Players CSV import with validate/commit flow
 
 ## Backend Features
 
 - Public match/team/author/stats endpoints
+- Public players endpoint for team squads
+- Public live channel listing and playback endpoint
 - Admin auth
-- CRUD for teams, matches, authors
+- CRUD for teams, matches, authors, players
+- CRUD for channels
 - Match result submission
-- CSV validate/commit import
+- Match CSV validate/commit import
+- Players CSV validate/commit import
 - MongoDB-backed data model
 
 ## API Overview
@@ -105,6 +112,9 @@ Notes:
 - `GET /api/matches`
 - `GET /api/matches/:id`
 - `GET /api/authors`
+- `GET /api/players`
+- `GET /api/channels`
+- `GET /api/channels/:id/stream`
 - `GET /api/stats/scoreboard`
 - `GET /api/stats/team/:id`
 - `GET /api/stats/tournament`
@@ -112,6 +122,10 @@ Notes:
 ### Admin
 
 - `POST /api/auth/login`
+- `GET /api/channels/admin`
+- `POST /api/channels`
+- `PUT /api/channels/:id`
+- `DELETE /api/channels/:id`
 - `POST /api/teams`
 - `PUT /api/teams/:id`
 - `DELETE /api/teams/:id`
@@ -122,12 +136,14 @@ Notes:
 - `POST /api/authors`
 - `PUT /api/authors/:id`
 - `DELETE /api/authors/:id`
+- `POST /api/import/players/validate`
+- `POST /api/import/players/commit`
 - `POST /api/import/validate`
 - `POST /api/import/commit`
 
 ## CSV Import
 
-Template lives at `client/public/matches-template.csv`.
+Templates live at `client/public/matches-template.csv` and `client/public/players-template.csv`.
 
 Flow:
 
@@ -159,6 +175,26 @@ Allowed `status` values:
 - `cancelled`
 - `postponed`
 
+Players import columns:
+
+- `teamName`
+- `name`
+- `position`
+- `jerseyNumber`
+- `dateOfBirth`
+- `height`
+- `club`
+- `nationality`
+- `role`
+
+Allowed player `position` values:
+
+- `GK`
+- `DEF`
+- `MID`
+- `FWD`
+- `COACH`
+
 ## Build
 
 ```bash
@@ -178,6 +214,7 @@ npm run build
 - Deploy `server/`
 - Set server env vars in host
 - Keep `CLIENT_URL` set to frontend origin
+- Protect private admin routes with `ADMIN_TOKEN`
 
 ### Frontend
 
@@ -187,5 +224,7 @@ npm run build
 ## Notes
 
 - Stats are computed from match data, not stored separately.
+- Admin auth token is handled in browser localStorage and sent as Bearer auth on admin requests.
+- Channel playback is public for published streams and loads from the channel `sourceUrl`.
 - Public/admin UI assume backend is running.
 - Keep `.env` files private.

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { api, setToken } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { api, getToken, setToken } from "@/lib/api";
 import { toast } from "sonner";
 import { Trophy } from "lucide-react";
 
@@ -14,6 +14,12 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (getToken()) navigate({ to: "/admin/dashboard" });
+  }, [navigate]);
+
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

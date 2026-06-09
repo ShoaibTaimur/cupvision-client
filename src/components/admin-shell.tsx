@@ -14,6 +14,7 @@ import {
   X,
   Home,
   Radio,
+  Shirt,
 } from "lucide-react";
 
 const NAV = [
@@ -22,7 +23,8 @@ const NAV = [
   { to: "/admin/channels", label: "Channels", icon: Radio },
   { to: "/admin/teams", label: "Teams", icon: Users },
   { to: "/admin/authors", label: "Authors", icon: UserCog },
-  { to: "/admin/import", label: "Import CSV", icon: Upload },
+  { to: "/admin/import", label: "Import Matches", icon: Upload },
+  { to: "/admin/players-import", label: "Import Players", icon: Shirt },
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {

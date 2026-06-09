@@ -20,9 +20,8 @@ const empty = {
   description: "",
   poster: "",
   accent: "",
-  streamType: "auto" as const,
+  streamType: "auto" as "hls" | "file" | "auto",
   sourceUrl: "",
-  hideSource: true,
   isFeatured: false,
   isPublished: true,
   sortOrder: 0,
@@ -73,7 +72,6 @@ function ChannelsAdmin() {
       accent: channel.accent || "",
       streamType: channel.streamType,
       sourceUrl: channel.sourceUrl,
-      hideSource: channel.hideSource !== false,
       isFeatured: !!channel.isFeatured,
       isPublished: channel.isPublished !== false,
       sortOrder: channel.sortOrder || 0,
@@ -140,14 +138,8 @@ function ChannelsAdmin() {
                             Featured
                           </span>
                         ) : null}
-                        <span
-                          className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${channel.forceProxy ? "bg-destructive/15 text-destructive" : channel.hideSource !== false ? "bg-primary/10 text-primary" : "bg-amber-500/15 text-amber-400"}`}
-                        >
-                          {channel.forceProxy
-                            ? "Proxy forced"
-                            : channel.hideSource !== false
-                              ? "Hidden source"
-                              : "Direct source"}
+                        <span className="rounded-full bg-amber-500/15 px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-amber-400">
+                          Direct CDN
                         </span>
                       </div>
                     </td>
@@ -290,19 +282,10 @@ function ChannelsAdmin() {
             />
           </Field>
 
-          <label className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={form.hideSource}
-              onChange={(e) => setForm({ ...form, hideSource: e.target.checked })}
-            />
-            <span>Hide source URL with proxy relay</span>
-          </label>
-
           <p className="rounded-md border border-border bg-background px-3 py-3 text-xs leading-5 text-muted-foreground">
-            `On` keeps origin behind CupVision proxy. `Off` sends direct source URL to browser.
-            Some HLS providers block direct browser playback with CORS/CORB, so `On` is safer.
-            BTV domains are forced through proxy automatically.
+            Streams play directly from the upstream CDN in the browser via HLS.js. No segments
+            pass through CupVision servers — zero proxy bandwidth. The source URL is visible to
+            anyone who inspects the page network tab.
           </p>
 
           <label className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-3 text-sm">

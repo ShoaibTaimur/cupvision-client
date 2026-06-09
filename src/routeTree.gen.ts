@@ -11,12 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WatchRouteImport } from './routes/watch'
 import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as SquadsRouteImport } from './routes/squads'
 import { Route as ScoreboardRouteImport } from './routes/scoreboard'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as AuthorsRouteImport } from './routes/authors'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminTeamsRouteImport } from './routes/admin.teams'
+import { Route as AdminPlayersImportRouteImport } from './routes/admin.players-import'
 import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
@@ -32,6 +34,11 @@ const WatchRoute = WatchRouteImport.update({
 const TimelineRoute = TimelineRouteImport.update({
   id: '/timeline',
   path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SquadsRoute = SquadsRouteImport.update({
+  id: '/squads',
+  path: '/squads',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScoreboardRoute = ScoreboardRouteImport.update({
@@ -62,6 +69,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminTeamsRoute = AdminTeamsRouteImport.update({
   id: '/admin/teams',
   path: '/admin/teams',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPlayersImportRoute = AdminPlayersImportRouteImport.update({
+  id: '/admin/players-import',
+  path: '/admin/players-import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMatchesRoute = AdminMatchesRouteImport.update({
@@ -101,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/authors': typeof AuthorsRoute
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
+  '/squads': typeof SquadsRoute
   '/timeline': typeof TimelineRoute
   '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
@@ -109,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/matches': typeof AdminMatchesRoute
+  '/admin/players-import': typeof AdminPlayersImportRoute
   '/admin/teams': typeof AdminTeamsRoute
 }
 export interface FileRoutesByTo {
@@ -117,6 +131,7 @@ export interface FileRoutesByTo {
   '/authors': typeof AuthorsRoute
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
+  '/squads': typeof SquadsRoute
   '/timeline': typeof TimelineRoute
   '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
@@ -125,6 +140,7 @@ export interface FileRoutesByTo {
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/matches': typeof AdminMatchesRoute
+  '/admin/players-import': typeof AdminPlayersImportRoute
   '/admin/teams': typeof AdminTeamsRoute
 }
 export interface FileRoutesById {
@@ -134,6 +150,7 @@ export interface FileRoutesById {
   '/authors': typeof AuthorsRoute
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
+  '/squads': typeof SquadsRoute
   '/timeline': typeof TimelineRoute
   '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
@@ -142,6 +159,7 @@ export interface FileRoutesById {
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/matches': typeof AdminMatchesRoute
+  '/admin/players-import': typeof AdminPlayersImportRoute
   '/admin/teams': typeof AdminTeamsRoute
 }
 export interface FileRouteTypes {
@@ -152,6 +170,7 @@ export interface FileRouteTypes {
     | '/authors'
     | '/matches'
     | '/scoreboard'
+    | '/squads'
     | '/timeline'
     | '/watch'
     | '/admin/authors'
@@ -160,6 +179,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/login'
     | '/admin/matches'
+    | '/admin/players-import'
     | '/admin/teams'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -168,6 +188,7 @@ export interface FileRouteTypes {
     | '/authors'
     | '/matches'
     | '/scoreboard'
+    | '/squads'
     | '/timeline'
     | '/watch'
     | '/admin/authors'
@@ -176,6 +197,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/login'
     | '/admin/matches'
+    | '/admin/players-import'
     | '/admin/teams'
   id:
     | '__root__'
@@ -184,6 +206,7 @@ export interface FileRouteTypes {
     | '/authors'
     | '/matches'
     | '/scoreboard'
+    | '/squads'
     | '/timeline'
     | '/watch'
     | '/admin/authors'
@@ -192,6 +215,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/login'
     | '/admin/matches'
+    | '/admin/players-import'
     | '/admin/teams'
   fileRoutesById: FileRoutesById
 }
@@ -201,6 +225,7 @@ export interface RootRouteChildren {
   AuthorsRoute: typeof AuthorsRoute
   MatchesRoute: typeof MatchesRoute
   ScoreboardRoute: typeof ScoreboardRoute
+  SquadsRoute: typeof SquadsRoute
   TimelineRoute: typeof TimelineRoute
   WatchRoute: typeof WatchRoute
   AdminAuthorsRoute: typeof AdminAuthorsRoute
@@ -209,6 +234,7 @@ export interface RootRouteChildren {
   AdminImportRoute: typeof AdminImportRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMatchesRoute: typeof AdminMatchesRoute
+  AdminPlayersImportRoute: typeof AdminPlayersImportRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
 }
 
@@ -226,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/timeline'
       fullPath: '/timeline'
       preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/squads': {
+      id: '/squads'
+      path: '/squads'
+      fullPath: '/squads'
+      preLoaderRoute: typeof SquadsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/scoreboard': {
@@ -268,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/teams'
       fullPath: '/admin/teams'
       preLoaderRoute: typeof AdminTeamsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/players-import': {
+      id: '/admin/players-import'
+      path: '/admin/players-import'
+      fullPath: '/admin/players-import'
+      preLoaderRoute: typeof AdminPlayersImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/matches': {
@@ -321,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthorsRoute: AuthorsRoute,
   MatchesRoute: MatchesRoute,
   ScoreboardRoute: ScoreboardRoute,
+  SquadsRoute: SquadsRoute,
   TimelineRoute: TimelineRoute,
   WatchRoute: WatchRoute,
   AdminAuthorsRoute: AdminAuthorsRoute,
@@ -329,6 +370,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminImportRoute: AdminImportRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMatchesRoute: AdminMatchesRoute,
+  AdminPlayersImportRoute: AdminPlayersImportRoute,
   AdminTeamsRoute: AdminTeamsRoute,
 }
 export const routeTree = rootRouteImport

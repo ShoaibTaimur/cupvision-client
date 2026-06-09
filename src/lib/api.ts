@@ -95,6 +95,19 @@ export interface Author {
   linkedin?: string;
   portfolio?: string;
 }
+export interface Player {
+  _id: string;
+  teamId: string;
+  team?: Team | null;
+  name: string;
+  position: "GK" | "DEF" | "MID" | "FWD" | "COACH";
+  jerseyNumber?: number;
+  dateOfBirth?: string;
+  height?: number;
+  club?: string;
+  nationality?: string;
+  role?: string;
+}
 export interface Channel {
   _id: string;
   name: string;
@@ -103,19 +116,15 @@ export interface Channel {
   description?: string;
   poster?: string;
   accent?: string;
-  streamType: "hls" | "file";
-  hideSource?: boolean;
-  forceProxy?: boolean;
+  streamType: "hls" | "file" | "auto";
   isFeatured?: boolean;
   isPublished?: boolean;
   sortOrder?: number;
-  proxyPlaybackUrl: string;
   playbackUrl: string;
 }
 export interface AdminChannel extends Channel {
   streamType: "hls" | "file" | "auto";
   sourceUrl: string;
-  hideSource: boolean;
 }
 export interface Standing {
   teamId: string;
