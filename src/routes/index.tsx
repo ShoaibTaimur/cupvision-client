@@ -3,8 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { api, Channel, Match } from "@/lib/api";
 import { MatchCard, LiveMatchCard } from "@/components/match-card";
-import { Skeleton } from "@/components/skeleton";
-import { Activity, CalendarClock, ChevronRight, PlayCircle, Radio, Trophy, Users } from "lucide-react";
+import { SectionReveal } from "@/components/section-reveal";
+import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
+import {
+  Activity,
+  CalendarClock,
+  ChevronRight,
+  PlayCircle,
+  Radio,
+  Trophy,
+  Users,
+} from "lucide-react";
+import { formatDate, formatTime } from "@/lib/date";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -55,7 +65,8 @@ function Home() {
   });
 
   const list = matches.data || [];
-  const featuredChannel = (channels.data || []).find((item) => item.isFeatured) || channels.data?.[0];
+  const featuredChannel =
+    (channels.data || []).find((item) => item.isFeatured) || channels.data?.[0];
   const live = list.find((m) => m.status === "live");
   const upcoming = list
     .filter((m) => m.status === "scheduled")
@@ -70,124 +81,215 @@ function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pointer-events-none" />
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-16 md:py-24">
-          <span className="inline-block px-3 py-1 rounded-full text-xs bg-primary/15 text-primary border border-primary/30 mb-4">
-            FIFA World Cup 2026
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight max-w-3xl">
-            Track. <span className="text-primary">Analyze.</span> Follow.
-          </h1>
-          <p className="mt-4 text-muted-foreground max-w-2xl">
-            Every match, every team, every result — the unofficial companion to the 2026 World Cup.
-            Live status, group standings and a full chronological timeline.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              to="/matches"
-              className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
-            >
-              Browse matches <ChevronRight className="size-4" />
-            </Link>
-            <Link
-              to="/scoreboard"
-              className="inline-flex items-center gap-1.5 border border-border rounded-md px-4 py-2 text-sm font-medium hover:bg-secondary transition-colors"
-            >
-              View scoreboard
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 grid lg:grid-cols-2 gap-6">
-        <Link
-          to="/watch"
-          className="group relative overflow-hidden rounded-lg border border-border bg-card p-6 transition-colors hover:bg-secondary/40 lg:col-span-2"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pointer-events-none" />
-          <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-primary">
-                <Radio className="size-3.5" /> New Watch Tab
-              </div>
-              <h2 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">
-                {featuredChannel ? `${featuredChannel.name} live now on CupVision.` : "Live channels now on CupVision."}
-              </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-                {featuredChannel?.description ||
-                  "Open featured stream from homepage, switch channels fast, keep fans inside one responsive viewing flow."}
-              </p>
+      <SectionReveal
+        delay={0.05}
+        className="relative isolate flex min-h-screen items-center overflow-hidden border-b border-border/70"
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(117,197,255,0.1),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(83,214,168,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[length:72px_72px] opacity-20" />
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 md:pt-36 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary backdrop-blur">
+              <Radio className="size-3.5" />
+              FIFA World Cup 2026
+            </span>
+            <h1 className="mt-6 max-w-4xl text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl md:text-6xl xl:text-7xl">
+              Tournament pulse.
+              <span className="block bg-[linear-gradient(135deg,#f7fbff_0%,#8ddcff_38%,#73f0c1_100%)] bg-clip-text text-transparent">
+                One sharp live board.
+              </span>
+            </h1>
+            <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+              Live match status, countdowns, scoreboard, squads, watch links, timeline. Fast scan.
+              Strong signal. No clutter.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/matches"
+                className="inline-flex items-center gap-1.5 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_18px_40px_rgba(117,197,255,0.24)] transition hover:bg-primary/90"
+              >
+                Browse matches <ChevronRight className="size-4" />
+              </Link>
+              <Link
+                to="/scoreboard"
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
+              >
+                View scoreboard
+              </Link>
             </div>
-            <div className="inline-flex items-center gap-2 self-start rounded-md border border-border bg-background/80 px-4 py-2 text-sm font-medium transition-colors group-hover:bg-background">
-              <PlayCircle className="size-4 text-primary" /> Watch now
-            </div>
-          </div>
-        </Link>
 
-        {/* Live */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="size-4 text-accent" />
-            <h2 className="font-semibold">Live match</h2>
-          </div>
-          {matches.isLoading ? (
-            <Skeleton className="h-28" />
-          ) : live ? (
-            <LiveMatchCard m={live} />
-          ) : (
-            <p className="text-sm text-muted-foreground">No matches live right now.</p>
-          )}
-        </div>
-
-        {/* Upcoming countdown */}
-        <div className="bg-card border border-border rounded-lg p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <CalendarClock className="size-4 text-primary" />
-            <h2 className="font-semibold">Next match</h2>
-          </div>
-          {matches.isLoading ? (
-            <Skeleton className="h-28" />
-          ) : upcoming ? (
-            <div>
-              <div className="text-sm text-muted-foreground">
-                {upcoming.homeTeam?.name} <span className="opacity-70">vs</span>{" "}
-                {upcoming.awayTeam?.name}
-              </div>
-              <div className="text-xs text-muted-foreground mb-3">
-                {upcoming.date} · {upcoming.time} · {upcoming.stadium}
-              </div>
-              {cd ? (
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  {[
-                    ["Days", cd.days],
-                    ["Hrs", cd.hours],
-                    ["Min", cd.minutes],
-                    ["Sec", cd.seconds],
-                  ].map(([l, v]) => (
-                    <div key={l as string} className="bg-secondary rounded-md py-2">
-                      <div className="text-2xl font-bold tabular-nums">
-                        {String(v).padStart(2, "0")}
-                      </div>
-                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                        {l}
-                      </div>
-                    </div>
-                  ))}
+            <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
+              {[
+                { label: "Live now", value: live ? "01" : "00" },
+                { label: "Channels", value: String(channels.data?.length ?? 0).padStart(2, "0") },
+                { label: "Upcoming", value: String(stats.data?.upcoming ?? 0).padStart(2, "0") },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-3xl border border-white/10 bg-white/6 px-4 py-4 backdrop-blur"
+                >
+                  <div className="text-2xl font-black tabular-nums text-white">{item.value}</div>
+                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-slate-400">
+                    {item.label}
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -right-6 top-8 h-24 w-24 rounded-full border border-white/10 bg-white/8 blur-2xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
+                    Next kickoff
+                  </div>
+                  <div className="mt-3 text-2xl font-black tracking-tight text-white">
+                    {upcoming
+                      ? `${upcoming.homeTeam?.name} vs ${upcoming.awayTeam?.name}`
+                      : "Schedule pending"}
+                  </div>
+                </div>
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-primary/18 text-primary">
+                  <Trophy className="size-6" />
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-slate-950/30 p-4">
+                <div className="flex items-center justify-between gap-4 text-sm text-slate-300">
+                  <span>{upcoming?.stadium || "Venue TBA"}</span>
+                  <span>
+                    {upcoming
+                      ? `${formatDate(upcoming.date)} · ${formatTime(upcoming.time)}`
+                      : "Awaiting update"}
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-4 gap-2">
+                  {cd
+                    ? [
+                        ["D", cd.days],
+                        ["H", cd.hours],
+                        ["M", cd.minutes],
+                        ["S", cd.seconds],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label as string}
+                          className="rounded-2xl border border-white/10 bg-white/6 px-3 py-3 text-center"
+                        >
+                          <div className="text-2xl font-black tabular-nums text-white">
+                            {String(value).padStart(2, "0")}
+                          </div>
+                          <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                            {label}
+                          </div>
+                        </div>
+                      ))
+                    : ["D", "H", "M", "S"].map((label) => (
+                        <div
+                          key={label}
+                          className="rounded-2xl border border-white/10 bg-white/6 px-3 py-3 text-center"
+                        >
+                          <div className="text-2xl font-black tabular-nums text-white">--</div>
+                          <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
+                            {label}
+                          </div>
+                        </div>
+                      ))}
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    Featured stream
+                  </div>
+                  <div className="mt-2 text-sm font-semibold text-white">
+                    {featuredChannel?.name || "No featured channel"}
+                  </div>
+                  <div className="mt-1 text-sm leading-6 text-slate-300">
+                    {featuredChannel?.badge || "Global feed"}
+                  </div>
+                </div>
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                  <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
+                    Live status
+                  </div>
+                  <div className="mt-2 text-sm font-semibold text-white">
+                    {live ? "Match running now" : "No live fixture"}
+                  </div>
+                  <div className="mt-1 text-sm leading-6 text-slate-300">
+                    {live
+                      ? `${live.homeTeam?.name} vs ${live.awayTeam?.name}`
+                      : "Stand by for kickoff"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SectionReveal>
+
+      <SectionReveal delay={0.12} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <Link
+            to="/watch"
+            className="group relative overflow-hidden rounded-[2rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.16)] transition hover:border-primary/30 sm:p-7"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(117,197,255,0.12),transparent_28%),linear-gradient(135deg,rgba(255,255,255,0.03),transparent_55%)]" />
+            <div className="relative flex h-full flex-col justify-between gap-6">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-primary">
+                  <Radio className="size-3.5" />
+                  Watch center
+                </div>
+                <h2 className="mt-4 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+                  {featuredChannel
+                    ? `${featuredChannel.name} leads live viewing.`
+                    : "Live channels, one quick watch flow."}
+                </h2>
+                <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+                  {featuredChannel?.description ||
+                    "Open featured stream fast, switch feeds fast, keep live coverage inside one clean surface."}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <div className="inline-flex items-center gap-2 rounded-2xl border border-border/70 bg-background/70 px-4 py-3 font-semibold text-foreground">
+                  <PlayCircle className="size-4 text-primary" />
+                  Watch now
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-background/50 px-4 py-3 text-muted-foreground">
+                  {featuredChannel?.badge || "Global feed"}
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <div className="rounded-[2rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.025),rgba(255,255,255,0.01))] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.14)]">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              <Activity className="size-4 text-primary" />
+              Live snapshot
+            </div>
+            <div className="mt-5">
+              {matches.isLoading ? (
+                <Skeleton className="h-40 rounded-[1.5rem]" />
+              ) : live ? (
+                <LiveMatchCard m={live} />
               ) : (
-                <p className="text-sm text-muted-foreground">Starting any moment.</p>
+                <div className="rounded-[1.5rem] border border-border/70 bg-background/60 p-5">
+                  <div className="text-lg font-semibold text-foreground">No live match now</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    Next fixtures, recent results, watch channels still ready below.
+                  </p>
+                </div>
               )}
             </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No upcoming match scheduled.</p>
-          )}
+          </div>
         </div>
-      </div>
+      </SectionReveal>
 
-      {/* Tournament stats */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <SectionReveal delay={0.18} className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
           {(
             [
               { label: "Total matches", value: stats.data?.totalMatches, icon: Trophy },
@@ -197,23 +299,33 @@ function Home() {
               { label: "Goals scored", value: stats.data?.goals, icon: Activity },
             ] as const
           ).map((s) => (
-            <div key={s.label} className="bg-card border border-border rounded-lg p-4">
-              <div className="flex items-center justify-between text-muted-foreground text-xs">
+            <div
+              key={s.label}
+              className="rounded-[1.5rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))] p-4 shadow-[0_14px_40px_rgba(0,0,0,0.08)]"
+            >
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>{s.label}</span>
                 <s.icon className="size-4" />
               </div>
-              <div className="text-2xl font-bold mt-1 tabular-nums">
+              <div className="mt-2 text-2xl font-black tabular-nums text-foreground">
                 {stats.isLoading ? "—" : (s.value ?? 0)}
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </SectionReveal>
 
       {/* Recent results */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
-        <div className="flex items-end justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent results</h2>
+      <SectionReveal delay={0.24} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        <div className="mb-5 flex items-end justify-between">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              Archive
+            </div>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-foreground">
+              Recent results
+            </h2>
+          </div>
           <Link to="/timeline" className="text-sm text-primary hover:underline">
             View timeline
           </Link>
@@ -221,7 +333,7 @@ function Home() {
         {matches.isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-28" />
+              <MatchCardSkeleton key={i} />
             ))}
           </div>
         ) : recent.length ? (
@@ -233,7 +345,7 @@ function Home() {
         ) : (
           <p className="text-sm text-muted-foreground">No completed matches yet.</p>
         )}
-      </section>
+      </SectionReveal>
     </div>
   );
 }

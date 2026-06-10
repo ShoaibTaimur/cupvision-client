@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/match-card";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Trophy } from "lucide-react";
 import { Field } from "./admin.teams";
+import { formatDateTime } from "@/lib/date";
 
 export const Route = createFileRoute("/admin/matches")({
   head: () => ({ meta: [{ title: "Matches — CupVision Admin" }] }),
@@ -147,14 +148,12 @@ function MatchesAdmin() {
                         {m.group ? ` · Group ${m.group}` : ""}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1 sm:hidden flex items-center gap-2">
-                        <span>
-                          {m.date} {m.time}
-                        </span>
+                        <span>{formatDateTime(m.date, m.time)}</span>
                         <StatusBadge status={m.status} />
                       </div>
                     </td>
                     <td className="px-3 py-2 text-muted-foreground text-xs hidden sm:table-cell">
-                      {m.date} {m.time}
+                      {formatDateTime(m.date, m.time)}
                     </td>
                     <td className="px-3 py-2 hidden sm:table-cell">
                       <StatusBadge status={m.status} />
@@ -574,9 +573,7 @@ function ActionsModal({
             {match.homeTeam?.name} vs {match.awayTeam?.name}
           </div>
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-            <span>
-              {match.date} {match.time}
-            </span>
+            <span>{formatDateTime(match.date, match.time)}</span>
             <StatusBadge status={match.status} />
           </div>
         </div>

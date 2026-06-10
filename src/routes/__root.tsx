@@ -14,6 +14,7 @@ import { inject } from "@vercel/analytics";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteFooter, SiteHeader } from "../components/site-chrome";
+import { ScrollTopButton } from "../components/scroll-top-button";
 import { Toaster } from "sonner";
 
 // Inject Vercel Analytics
@@ -111,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -127,15 +128,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = path.startsWith("/admin");
+  const isHome = path === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen flex flex-col">
         {!isAdmin && <SiteHeader />}
-        <main className="flex-1">
+        <main className={isAdmin ? "flex-1" : isHome ? "flex-1" : "flex-1 pt-20 sm:pt-24"}>
           <Outlet />
         </main>
         {!isAdmin && <SiteFooter />}
+        {!isAdmin && <ScrollTopButton />}
       </div>
       <Toaster theme="dark" position="top-right" richColors />
     </QueryClientProvider>

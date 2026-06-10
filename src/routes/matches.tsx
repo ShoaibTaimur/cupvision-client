@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { api, Match } from "@/lib/api";
 import { MatchCard } from "@/components/match-card";
-import { Skeleton } from "@/components/skeleton";
+import { SectionReveal } from "@/components/section-reveal";
+import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
 import { Search } from "lucide-react";
 
 export const Route = createFileRoute("/matches")({
@@ -67,7 +68,7 @@ function MatchesPage() {
   }, [matches.data, q, status, group]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <SectionReveal delay={0.08} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-bold mb-2">Matches</h1>
       <p className="text-muted-foreground mb-6">Browse fixtures and results.</p>
 
@@ -108,7 +109,7 @@ function MatchesPage() {
       {matches.isLoading ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
           {Array.from({ length: 9 }).map((_, i) => (
-            <Skeleton key={i} className="h-28" />
+            <MatchCardSkeleton key={i} />
           ))}
         </div>
       ) : matches.isError ? (
@@ -122,6 +123,6 @@ function MatchesPage() {
           ))}
         </div>
       )}
-    </div>
+    </SectionReveal>
   );
 }

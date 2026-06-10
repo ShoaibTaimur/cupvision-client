@@ -159,8 +159,8 @@ function PlayersImportPage() {
               )}
               {result.newTeams.length > 0 && (
                 <div className="mt-3 text-xs text-muted-foreground">
-                  <strong>{result.newTeams.length}</strong> unique team names referenced. Any not
-                  in DB will be auto-created.
+                  <strong>{result.newTeams.length}</strong> unique team names referenced. Any not in
+                  DB will be auto-created.
                 </div>
               )}
               {result.preview.length > 0 && (
@@ -206,14 +206,38 @@ function PlayersImportPage() {
               </tr>
             </thead>
             <tbody className="text-muted-foreground">
-              <tr><td className="font-mono">teamName</td><td>required, auto-created</td></tr>
-              <tr><td className="font-mono">name</td><td>required, player full name</td></tr>
-              <tr><td className="font-mono">position</td><td>required: GK, DEF, MID, FWD</td></tr>
-              <tr><td className="font-mono">jerseyNumber</td><td>optional 1–99, unique per team</td></tr>
-              <tr><td className="font-mono">dateOfBirth</td><td>optional YYYY-MM-DD</td></tr>
-              <tr><td className="font-mono">height</td><td>optional cm, 140–230</td></tr>
-              <tr><td className="font-mono">club</td><td>optional</td></tr>
-              <tr><td className="font-mono">nationality</td><td>optional</td></tr>
+              <tr>
+                <td className="font-mono">teamName</td>
+                <td>required, auto-created</td>
+              </tr>
+              <tr>
+                <td className="font-mono">name</td>
+                <td>required, player full name</td>
+              </tr>
+              <tr>
+                <td className="font-mono">position</td>
+                <td>required: GK, DEF, MID, FWD</td>
+              </tr>
+              <tr>
+                <td className="font-mono">jerseyNumber</td>
+                <td>optional 1–99, unique per team</td>
+              </tr>
+              <tr>
+                <td className="font-mono">dateOfBirth</td>
+                <td>optional YYYY-MM-DD</td>
+              </tr>
+              <tr>
+                <td className="font-mono">height</td>
+                <td>optional cm, 140–230</td>
+              </tr>
+              <tr>
+                <td className="font-mono">club</td>
+                <td>optional</td>
+              </tr>
+              <tr>
+                <td className="font-mono">nationality</td>
+                <td>optional</td>
+              </tr>
             </tbody>
           </table>
         </aside>

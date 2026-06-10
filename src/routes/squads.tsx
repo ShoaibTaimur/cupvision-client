@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { api, Player, Team } from "@/lib/api";
-import { Skeleton } from "@/components/skeleton";
+import { SectionReveal } from "@/components/section-reveal";
+import { Skeleton, PlayerCardSkeleton, TeamListSkeleton } from "@/components/skeleton";
 import { Search, Shield, Shirt, User, ChevronDown, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
@@ -64,8 +65,7 @@ function SquadsPage() {
 
   const playersQ = useQuery({
     queryKey: ["players", teamId],
-    queryFn: () =>
-      api.get<Player[]>(teamId ? `/api/players?teamId=${teamId}` : "/api/players"),
+    queryFn: () => api.get<Player[]>(teamId ? `/api/players?teamId=${teamId}` : "/api/players"),
     enabled: !!teamId,
   });
 
@@ -103,7 +103,7 @@ function SquadsPage() {
   }, [playerList]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <SectionReveal delay={0.08} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Squads</h1>
         <p className="text-muted-foreground">
@@ -122,9 +122,7 @@ function SquadsPage() {
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
               Team
             </div>
-            <div className="font-semibold truncate">
-              {activeTeam?.name || "Select a team"}
-            </div>
+            <div className="font-semibold truncate">{activeTeam?.name || "Select a team"}</div>
           </div>
           <ChevronDown className="size-4 text-muted-foreground shrink-0" />
         </button>
@@ -166,8 +164,8 @@ function SquadsPage() {
                   <div>
                     <h2 className="text-xl font-bold">{activeTeam?.name}</h2>
                     <p className="text-xs text-muted-foreground">
-                      {counts.all} players · {counts.GK} GK · {counts.DEF} DEF · {counts.MID} MID
-                      · {counts.FWD} FWD
+                      {counts.all} players · {counts.GK} GK · {counts.DEF} DEF · {counts.MID} MID ·{" "}
+                      {counts.FWD} FWD
                     </p>
                   </div>
                 </div>
@@ -219,7 +217,11 @@ function SquadsPage() {
               </div>
 
               {playersQ.isLoading ? (
-                <Skeleton className="h-64" />
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <PlayerCardSkeleton key={i} />
+                  ))}
+                </div>
               ) : grouped.length === 0 ? (
                 <div className="bg-card border border-border rounded-lg p-12 text-center text-sm text-muted-foreground">
                   No players in this category.
@@ -274,7 +276,7 @@ function SquadsPage() {
           </div>,
           document.body,
         )}
-    </div>
+    </SectionReveal>
   );
 }
 
@@ -305,7 +307,7 @@ function TeamList({
         />
       </div>
       {loading ? (
-        <Skeleton className="h-64" />
+        <TeamListSkeleton count={8} />
       ) : (
         <div className="flex-1 max-h-[70vh] overflow-y-auto space-y-1 pr-1">
           {teams.map((t) => {
@@ -322,23 +324,18 @@ function TeamList({
               >
                 <Shield className="size-4 shrink-0" />
                 <span className="flex-1 text-left truncate">{t.name}</span>
-                {t.group && (
-                  <span className="text-[10px] opacity-70">Group {t.group}</span>
-                )}
+                {t.group && <span className="text-[10px] opacity-70">Group {t.group}</span>}
               </button>
             );
           })}
           {teams.length === 0 && (
-            <div className="text-xs text-muted-foreground text-center py-8">
-              No teams found
-            </div>
+            <div className="text-xs text-muted-foreground text-center py-8">No teams found</div>
           )}
         </div>
       )}
     </>
   );
 }
-
 
 function PlayerCard({ p }: { p: Player }) {
   return (

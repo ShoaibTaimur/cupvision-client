@@ -38,7 +38,7 @@ npm install
 npm run dev
 ```
 
-Backend default: `http://localhost:5000`
+Backend default: `http://localhost:5500`
 
 ### 2. Frontend
 
@@ -55,7 +55,7 @@ Frontend default: Vite local dev URL.
 ### `server/.env`
 
 ```env
-PORT=5000
+PORT=5500
 MONGODB_URI=mongodb+srv://...
 DB_NAME=cupvision
 CLIENT_URL=http://localhost:5173
@@ -67,7 +67,7 @@ ADMIN_TOKEN=replace-with-long-random-string
 ### `client/.env`
 
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:5500
 ```
 
 Notes:

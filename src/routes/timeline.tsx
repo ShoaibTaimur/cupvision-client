@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api, Match } from "@/lib/api";
 import { MatchCard } from "@/components/match-card";
-import { Skeleton } from "@/components/skeleton";
+import { SectionReveal } from "@/components/section-reveal";
+import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
+import { formatDate } from "@/lib/date";
 
 export const Route = createFileRoute("/timeline")({
   head: () => ({
@@ -39,12 +41,23 @@ function TimelinePage() {
   }, [matches.data]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
+    <SectionReveal delay={0.08} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-bold mb-2">Timeline</h1>
       <p className="text-muted-foreground mb-8">Every match, day by day.</p>
 
       {matches.isLoading ? (
-        <Skeleton className="h-96" />
+        <div className="space-y-8">
+          {Array.from({ length: 3 }).map((_, g) => (
+            <div key={g} className="space-y-3">
+              <Skeleton className="h-4 w-28" />
+              <div className="grid md:grid-cols-2 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <MatchCardSkeleton key={i} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : grouped.length === 0 ? (
         <p className="text-sm text-muted-foreground">No matches yet.</p>
       ) : (
@@ -52,7 +65,9 @@ function TimelinePage() {
           {grouped.map(([date, items]) => (
             <div key={date} className="relative">
               <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-primary ring-4 ring-background" />
-              <div className="text-sm font-semibold mb-3">{date}</div>
+              <div className="text-sm font-semibold mb-3">
+                {formatDate(date, "dddd, MMMM D, YYYY")}
+              </div>
               <div className="grid md:grid-cols-2 gap-3">
                 {items.map((m) => (
                   <MatchCard key={m._id} m={m} />
@@ -62,6 +77,6 @@ function TimelinePage() {
           ))}
         </div>
       )}
-    </div>
+    </SectionReveal>
   );
 }

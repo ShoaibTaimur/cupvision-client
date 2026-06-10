@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ExternalLink, PlayCircle, Radio, Tv } from "lucide-react";
 import { ChannelPlayer } from "@/components/channel-player";
-import { Skeleton } from "@/components/skeleton";
+import { SectionReveal } from "@/components/section-reveal";
+import { Skeleton, ChannelCardSkeleton, PlayerSkeleton } from "@/components/skeleton";
 import { api, type Channel } from "@/lib/api";
 
 export const Route = createFileRoute("/watch")({
@@ -37,7 +38,10 @@ function WatchPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <section className="relative overflow-hidden rounded-[1.75rem] border border-border bg-card p-6 sm:p-8">
+      <SectionReveal
+        delay={0.06}
+        className="relative overflow-hidden rounded-[1.75rem] border border-border bg-card p-6 sm:p-8"
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pointer-events-none" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
@@ -54,35 +58,15 @@ function WatchPage() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:w-auto">
             <StatCard label="Channels live" value={String(list.length)} icon={Tv} />
-            <StatCard
-              label="Featured now"
-              value={featured?.name ? "1" : "0"}
-              icon={PlayCircle}
-            />
+            <StatCard label="Featured now" value={featured?.name ? "1" : "0"} icon={PlayCircle} />
           </div>
         </div>
-      </section>
+      </SectionReveal>
 
-      <section className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_360px]">
+      <SectionReveal delay={0.14} className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_360px]">
         <div className="space-y-4">
-          <div className="rounded-lg border border-primary/40 bg-primary/12 p-4 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 rounded-full bg-primary px-2 py-1 text-[10px] font-bold uppercase tracking-[0.3em] text-primary-foreground">
-                Sound
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground sm:text-base">
-                  Video does not autoplay.
-                </p>
-                <p className="mt-1 text-sm leading-6 text-foreground/90">
-                  Press play to start stream. Use controls to unmute for sound.
-                </p>
-              </div>
-            </div>
-          </div>
-
           {channels.isLoading ? (
-            <Skeleton className="aspect-video rounded-[1.5rem]" />
+            <PlayerSkeleton />
           ) : current ? (
             <>
               {current.useRedirect && current.redirectUrl ? (
@@ -122,7 +106,7 @@ function WatchPage() {
           {channels.isLoading ? (
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-24 rounded-2xl" />
+                <ChannelCardSkeleton key={index} />
               ))}
             </div>
           ) : list.length ? (
@@ -159,20 +143,12 @@ function WatchPage() {
             <EmptyState compact />
           )}
         </aside>
-      </section>
+      </SectionReveal>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon: typeof Tv;
-}) {
+function StatCard({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Tv }) {
   return (
     <div className="min-w-32 rounded-lg border border-border bg-background/80 p-4">
       <div className="flex items-center justify-between text-muted-foreground">
@@ -213,8 +189,8 @@ function RedirectCard({ channel }: { channel: Channel }) {
         </div>
         <h3 className="text-2xl font-semibold text-white sm:text-3xl">{channel.name}</h3>
         <p className="max-w-md text-sm leading-6 text-white/80">
-          This channel is hosted on an external site. Click below to open the live stream in a
-          new tab.
+          This channel is hosted on an external site. Click below to open the live stream in a new
+          tab.
         </p>
         <a
           href={channel.redirectUrl}
@@ -229,4 +205,3 @@ function RedirectCard({ channel }: { channel: Channel }) {
     </div>
   );
 }
-

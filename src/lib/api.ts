@@ -1,4 +1,6 @@
-const API_URL = (import.meta.env.VITE_API_URL as string) || "http://localhost:5000";
+import { env } from "@/config/env";
+
+const API_URL = env.apiUrl;
 const TOKEN_KEY = "cupvision_admin_token";
 
 export function getToken(): string | null {

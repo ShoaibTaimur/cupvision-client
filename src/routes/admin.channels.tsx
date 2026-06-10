@@ -158,7 +158,9 @@ function ChannelsAdmin() {
                           <Pencil className="size-4" />
                         </button>
                         <button
-                          onClick={() => confirm(`Delete ${channel.name}?`) && del.mutate(channel._id)}
+                          onClick={() =>
+                            confirm(`Delete ${channel.name}?`) && del.mutate(channel._id)
+                          }
                           className="rounded-md p-1.5 text-destructive hover:bg-destructive/15"
                         >
                           <Trash2 className="size-4" />
@@ -289,9 +291,9 @@ function ChannelsAdmin() {
           </Field>
 
           <p className="rounded-md border border-border bg-background px-3 py-3 text-xs leading-5 text-muted-foreground">
-            Streams play directly from the upstream CDN in the browser via HLS.js. No segments
-            pass through CupVision servers — zero proxy bandwidth. The source URL is visible to
-            anyone who inspects the page network tab.
+            Streams play directly from the upstream CDN in the browser via HLS.js. No segments pass
+            through CupVision servers — zero proxy bandwidth. The source URL is visible to anyone
+            who inspects the page network tab.
           </p>
 
           <div className="space-y-3 rounded-md border border-border bg-background px-3 py-3">
@@ -304,9 +306,9 @@ function ChannelsAdmin() {
               <span>Use external redirect (no embedded player)</span>
             </label>
             <p className="text-xs leading-5 text-muted-foreground">
-              When on, the watch page hides the player and shows a button that opens the link
-              below in a new tab. Use it to push viewers to an external site so no stream
-              requests hit your server.
+              When on, the watch page hides the player and shows a button that opens the link below
+              in a new tab. Use it to push viewers to an external site so no stream requests hit
+              your server.
             </p>
             {form.useRedirect ? (
               <>
@@ -331,7 +333,6 @@ function ChannelsAdmin() {
               </>
             ) : null}
           </div>
-
 
           <label className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-3 text-sm">
             <input
