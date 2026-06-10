@@ -1,6 +1,6 @@
 # CupVision
 
-CupVision is full-stack FIFA World Cup 2026 tracker.
+CupVision is full stack FIFA World Cup 2026 tracker.
 
 It ships with:
 
