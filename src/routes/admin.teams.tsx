@@ -6,6 +6,9 @@ import { api, Team } from "@/lib/api";
 import { Skeleton } from "@/components/skeleton";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/admin/teams")({
   head: () => ({ meta: [{ title: "Teams — CupVision Admin" }] }),
@@ -66,44 +69,47 @@ function TeamsAdmin() {
           {list.isLoading ? (
             <Skeleton className="h-64" />
           ) : (
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase text-muted-foreground border-b border-border">
-                <tr>
-                  <th className="text-left px-3 py-3">Name</th>
-                  <th className="text-left px-3 py-3">Group</th>
-                  <th className="text-right px-3 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Group</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {list.data?.map((t) => (
-                  <tr key={t._id} className="border-b border-border last:border-0">
-                    <td className="px-3 py-2 font-medium">{t.name}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{t.group || "—"}</td>
-                    <td className="px-3 py-2 text-right space-x-1">
-                      <button
+                  <TableRow key={t._id}>
+                    <TableCell className="font-medium">{t.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{t.group || "—"}</TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => startEdit(t)}
-                        className="p-1.5 rounded-md hover:bg-secondary"
                       >
                         <Pencil className="size-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => confirm(`Delete ${t.name}?`) && del.mutate(t._id)}
-                        className="p-1.5 rounded-md hover:bg-destructive/20 text-destructive"
+                        className="text-destructive hover:bg-destructive/20 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
                 {list.data?.length === 0 && (
-                  <tr>
-                    <td colSpan={3} className="px-3 py-8 text-center text-muted-foreground">
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
                       No teams.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </div>
 
@@ -117,44 +123,43 @@ function TeamsAdmin() {
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">{editing ? "Edit team" : "New team"}</h2>
             {editing && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={startNew}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground"
               >
-                <Plus className="size-3 inline" /> New
-              </button>
+                <Plus className="size-3 mr-1" /> New
+              </Button>
             )}
           </div>
           <Field label="Name *">
-            <input
+            <Input
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Group (A-L)">
-            <input
+            <Input
               value={form.group}
               onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
               maxLength={1}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Flag URL">
-            <input
+            <Input
               value={form.flag}
               onChange={(e) => setForm({ ...form, flag: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
-          <button
+          <Button
             disabled={save.isPending}
-            className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="w-full"
           >
             {save.isPending ? "Saving..." : editing ? "Update" : "Create"}
-          </button>
+          </Button>
         </form>
       </div>
     </AdminShell>

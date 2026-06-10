@@ -7,6 +7,12 @@ import { AdminShell } from "@/components/admin-shell";
 import { Skeleton } from "@/components/skeleton";
 import { api, type AdminChannel } from "@/lib/api";
 import { Field } from "./admin.teams";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/channels")({
   head: () => ({ meta: [{ title: "Channels — CupVision Admin" }] }),
@@ -98,12 +104,9 @@ function ChannelsAdmin() {
             Add live streams. Publish featured watch tabs from one panel.
           </p>
         </div>
-        <button
-          onClick={startNew}
-          className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
-        >
+        <Button onClick={startNew} className="flex items-center gap-2">
           <BadgePlus className="size-4" /> New channel
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
@@ -111,28 +114,28 @@ function ChannelsAdmin() {
           {list.isLoading ? (
             <Skeleton className="h-64" />
           ) : (
-            <table className="w-full text-sm">
-              <thead className="border-b border-border text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-3 text-left">Channel</th>
-                  <th className="px-3 py-3 text-left hidden md:table-cell">Type</th>
-                  <th className="px-3 py-3 text-left">State</th>
-                  <th className="px-3 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Channel</TableHead>
+                  <TableHead className="hidden md:table-cell">Type</TableHead>
+                  <TableHead>State</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {list.data?.map((channel) => (
-                  <tr key={channel._id} className="border-b border-border last:border-0">
-                    <td className="px-3 py-3">
+                  <TableRow key={channel._id}>
+                    <TableCell>
                       <div className="font-medium">{channel.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {channel.category || "Live channel"}
                       </div>
-                    </td>
-                    <td className="hidden px-3 py-3 text-muted-foreground md:table-cell">
+                    </TableCell>
+                    <TableCell className="hidden text-muted-foreground md:table-cell">
                       {channel.streamType}
-                    </td>
-                    <td className="px-3 py-3">
+                    </TableCell>
+                    <TableCell>
                       <div className="flex flex-wrap gap-2">
                         <span
                           className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.2em] ${channel.isPublished !== false ? "bg-emerald-500/15 text-emerald-400" : "bg-zinc-500/15 text-zinc-400"}`}
@@ -148,36 +151,39 @@ function ChannelsAdmin() {
                           Direct CDN
                         </span>
                       </div>
-                    </td>
-                    <td className="px-3 py-3 text-right">
+                    </TableCell>
+                    <TableCell className="text-right">
                       <div className="inline-flex gap-1">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => startEdit(channel)}
-                          className="rounded-md p-1.5 hover:bg-secondary"
                         >
                           <Pencil className="size-4" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() =>
                             confirm(`Delete ${channel.name}?`) && del.mutate(channel._id)
                           }
-                          className="rounded-md p-1.5 text-destructive hover:bg-destructive/15"
+                          className="text-destructive hover:bg-destructive/15 hover:text-destructive"
                         >
                           <Trash2 className="size-4" />
-                        </button>
+                        </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
                 {list.data?.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-3 py-8 text-center text-muted-foreground">
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
                       No channels yet.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : null}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </div>
 
@@ -191,101 +197,97 @@ function ChannelsAdmin() {
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">{editing ? "Edit channel" : "New channel"}</h2>
             {editing ? (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={startNew}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground"
               >
                 Reset
-              </button>
+              </Button>
             ) : null}
           </div>
 
           <Field label="Channel name *">
-            <input
+            <Input
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
             />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Category">
-              <input
+              <Input
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Badge">
-              <input
+              <Input
                 value={form.badge}
                 onChange={(e) => setForm({ ...form, badge: e.target.value })}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
               />
             </Field>
           </div>
 
           <Field label="Description">
-            <textarea
+            <Textarea
               rows={3}
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
             />
           </Field>
 
           <Field label="Source link *">
-            <input
+            <Input
               required
               type="url"
               value={form.sourceUrl}
               onChange={(e) => setForm({ ...form, sourceUrl: e.target.value })}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
               placeholder="https://example.com/live.m3u8"
             />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Stream type">
-              <select
+              <Select
                 value={form.streamType}
-                onChange={(e) =>
-                  setForm({ ...form, streamType: e.target.value as typeof form.streamType })
-                }
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                onValueChange={(value) => setForm({ ...form, streamType: value as any })}
               >
-                <option value="auto">Auto detect</option>
-                <option value="hls">HLS / m3u8</option>
-                <option value="file">Direct file</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Auto detect</SelectItem>
+                  <SelectItem value="hls">HLS / m3u8</SelectItem>
+                  <SelectItem value="file">Direct file</SelectItem>
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Sort order">
-              <input
+              <Input
                 type="number"
                 min={0}
                 value={form.sortOrder}
                 onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
-                className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
               />
             </Field>
           </div>
 
           <Field label="Poster image">
-            <input
+            <Input
               type="url"
               value={form.poster}
               onChange={(e) => setForm({ ...form, poster: e.target.value })}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
             />
           </Field>
 
           <Field label="Accent background">
-            <input
+            <Input
               value={form.accent}
               onChange={(e) => setForm({ ...form, accent: e.target.value })}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
               placeholder="linear-gradient(...) or #0891b2"
             />
           </Field>
@@ -298,10 +300,9 @@ function ChannelsAdmin() {
 
           <div className="space-y-3 rounded-md border border-border bg-background px-3 py-3">
             <label className="flex items-center gap-3 text-sm">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={form.useRedirect}
-                onChange={(e) => setForm({ ...form, useRedirect: e.target.checked })}
+                onCheckedChange={(c) => setForm({ ...form, useRedirect: !!c })}
               />
               <span>Use external redirect (no embedded player)</span>
             </label>
@@ -313,20 +314,18 @@ function ChannelsAdmin() {
             {form.useRedirect ? (
               <>
                 <Field label="Redirect URL *">
-                  <input
+                  <Input
                     type="url"
                     required={form.useRedirect}
                     value={form.redirectUrl}
                     onChange={(e) => setForm({ ...form, redirectUrl: e.target.value })}
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                     placeholder="https://example.com/live"
                   />
                 </Field>
                 <Field label="Button label">
-                  <input
+                  <Input
                     value={form.redirectLabel}
                     onChange={(e) => setForm({ ...form, redirectLabel: e.target.value })}
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                     placeholder="Watch on external site"
                   />
                 </Field>
@@ -335,10 +334,9 @@ function ChannelsAdmin() {
           </div>
 
           <label className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-3 text-sm">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={form.isFeatured}
-              onChange={(e) => setForm({ ...form, isFeatured: e.target.checked })}
+              onCheckedChange={(c) => setForm({ ...form, isFeatured: !!c })}
             />
             <span className="flex items-center gap-2">
               <Radio className="size-4 text-cyan-500" /> Highlight on watch page
@@ -346,20 +344,19 @@ function ChannelsAdmin() {
           </label>
 
           <label className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-3 text-sm">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={form.isPublished}
-              onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
+              onCheckedChange={(c) => setForm({ ...form, isPublished: !!c })}
             />
             <span>Visible on public site</span>
           </label>
 
-          <button
+          <Button
             disabled={save.isPending}
-            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            className="w-full"
           >
             {save.isPending ? "Saving..." : editing ? "Update channel" : "Create channel"}
-          </button>
+          </Button>
         </form>
       </div>
     </AdminShell>

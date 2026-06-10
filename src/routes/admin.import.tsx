@@ -4,6 +4,8 @@ import { AdminShell } from "@/components/admin-shell";
 import { API_URL, getToken } from "@/lib/api";
 import { toast } from "sonner";
 import { Download, FileUp, CheckCircle2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/admin/import")({
   head: () => ({ meta: [{ title: "CSV Import — CupVision Admin" }] }),
@@ -122,20 +124,21 @@ function ImportPage() {
               />
             </label>
             <div className="flex gap-2 mt-3">
-              <button
+              <Button
+                variant="secondary"
                 disabled={!file || validating}
                 onClick={onValidate}
-                className="flex-1 bg-secondary hover:bg-secondary/80 rounded-md py-2 text-sm font-medium disabled:opacity-50"
+                className="flex-1"
               >
                 {validating ? "Validating..." : "3. Validate"}
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={!file || !result?.valid || committing}
                 onClick={onCommit}
-                className="flex-1 bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                className="flex-1"
               >
                 {committing ? "Importing..." : "4. Confirm import"}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -171,28 +174,28 @@ function ImportPage() {
                   <div className="text-xs text-muted-foreground mb-2">
                     Preview (first {result.preview.length})
                   </div>
-                  <table className="w-full text-xs">
-                    <thead className="text-muted-foreground border-b border-border">
-                      <tr>
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow>
                         {Object.keys(result.preview[0]).map((k) => (
-                          <th key={k} className="px-2 py-1 text-left">
+                          <TableHead key={k}>
                             {k}
-                          </th>
+                          </TableHead>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {result.preview.map((r, i) => (
-                        <tr key={i} className="border-b border-border last:border-0">
+                        <TableRow key={i}>
                           {Object.values(r).map((v, j) => (
-                            <td key={j} className="px-2 py-1 whitespace-nowrap">
+                            <TableCell key={j} className="whitespace-nowrap">
                               {String(v)}
-                            </td>
+                            </TableCell>
                           ))}
-                        </tr>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </div>
@@ -201,56 +204,56 @@ function ImportPage() {
 
         <aside className="bg-card border border-border rounded-lg p-5 h-fit text-xs">
           <h3 className="font-semibold text-sm mb-3">CSV format</h3>
-          <table className="w-full">
-            <thead className="text-muted-foreground">
-              <tr>
-                <th className="text-left py-1">Column</th>
-                <th className="text-left py-1">Notes</th>
-              </tr>
-            </thead>
-            <tbody className="text-muted-foreground">
-              <tr>
-                <td className="font-mono">matchNumber</td>
-                <td>positive int, unique</td>
-              </tr>
-              <tr>
-                <td className="font-mono">homeTeam</td>
-                <td>auto-created if new</td>
-              </tr>
-              <tr>
-                <td className="font-mono">awayTeam</td>
-                <td>auto-created if new</td>
-              </tr>
-              <tr>
-                <td className="font-mono">date</td>
-                <td>YYYY-MM-DD</td>
-              </tr>
-              <tr>
-                <td className="font-mono">time</td>
-                <td>HH:MM (24h)</td>
-              </tr>
-              <tr>
-                <td className="font-mono">stadium</td>
-                <td>text</td>
-              </tr>
-              <tr>
-                <td className="font-mono">city</td>
-                <td>text</td>
-              </tr>
-              <tr>
-                <td className="font-mono">stage</td>
-                <td>e.g. Group Stage</td>
-              </tr>
-              <tr>
-                <td className="font-mono">group</td>
-                <td>A–L or empty</td>
-              </tr>
-              <tr>
-                <td className="font-mono">status</td>
-                <td>scheduled, live, awaiting_result, completed, cancelled, postponed</td>
-              </tr>
-            </tbody>
-          </table>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Column</TableHead>
+                <TableHead>Notes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-mono">matchNumber</TableCell>
+                <TableCell>positive int, unique</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">homeTeam</TableCell>
+                <TableCell>auto-created if new</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">awayTeam</TableCell>
+                <TableCell>auto-created if new</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">date</TableCell>
+                <TableCell>YYYY-MM-DD</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">time</TableCell>
+                <TableCell>HH:MM (24h)</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">stadium</TableCell>
+                <TableCell>text</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">city</TableCell>
+                <TableCell>text</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">stage</TableCell>
+                <TableCell>e.g. Group Stage</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">group</TableCell>
+                <TableCell>A–L or empty</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">status</TableCell>
+                <TableCell>scheduled, live, awaiting_result, completed, cancelled, postponed</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </aside>
       </div>
     </AdminShell>

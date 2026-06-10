@@ -7,6 +7,9 @@ import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, TableRowSkeleton, MatchCardSkeleton } from "@/components/skeleton";
 import { MatchCard } from "@/components/match-card";
 import { Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/scoreboard")({
   head: () => ({
@@ -44,99 +47,99 @@ function ScoreboardPage() {
       </p>
 
       <div className="relative max-w-md mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <input
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground z-10" />
+        <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search team"
-          className="w-full bg-card border border-border rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          className="pl-10"
         />
       </div>
 
       {standings.isLoading ? (
         <div className="overflow-x-auto bg-card border border-border rounded-lg">
-          <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-3 py-3 text-left">#</th>
-                <th className="px-3 py-3 text-left">Team</th>
-                <th className="px-3 py-3 text-right">P</th>
-                <th className="px-3 py-3 text-right">W</th>
-                <th className="px-3 py-3 text-right">D</th>
-                <th className="px-3 py-3 text-right">L</th>
-                <th className="px-3 py-3 text-right hidden sm:table-cell">GF</th>
-                <th className="px-3 py-3 text-right hidden sm:table-cell">GA</th>
-                <th className="px-3 py-3 text-right hidden sm:table-cell">GD</th>
-                <th className="px-3 py-3 text-right">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead className="text-right">P</TableHead>
+                <TableHead className="text-right">W</TableHead>
+                <TableHead className="text-right">D</TableHead>
+                <TableHead className="text-right">L</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">GF</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">GA</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">GD</TableHead>
+                <TableHead className="text-right">Pts</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {Array.from({ length: 12 }).map((_, i) => (
                 <TableRowSkeleton key={i} cols={10} />
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       ) : (
         <div className="overflow-x-auto bg-card border border-border rounded-lg">
-          <table className="w-full text-sm">
-            <thead className="text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
-              <tr>
-                <th className="px-3 py-3 text-left">#</th>
-                <th className="px-3 py-3 text-left">Team</th>
-                <th className="px-3 py-3 text-right">P</th>
-                <th className="px-3 py-3 text-right">W</th>
-                <th className="px-3 py-3 text-right">D</th>
-                <th className="px-3 py-3 text-right">L</th>
-                <th className="px-3 py-3 text-right hidden sm:table-cell">GF</th>
-                <th className="px-3 py-3 text-right hidden sm:table-cell">GA</th>
-                <th className="px-3 py-3 text-right hidden sm:table-cell">GD</th>
-                <th className="px-3 py-3 text-right">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Team</TableHead>
+                <TableHead className="text-right">P</TableHead>
+                <TableHead className="text-right">W</TableHead>
+                <TableHead className="text-right">D</TableHead>
+                <TableHead className="text-right">L</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">GF</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">GA</TableHead>
+                <TableHead className="text-right hidden sm:table-cell">GD</TableHead>
+                <TableHead className="text-right">Pts</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {filtered.map((s, idx) => (
-                <tr
+                <TableRow
                   key={s.teamId}
                   onClick={() => setOpenTeam(s.teamId)}
-                  className="border-b border-border last:border-0 hover:bg-secondary cursor-pointer transition-colors"
+                  className="cursor-pointer transition-colors hover:bg-secondary"
                 >
-                  <td className="px-3 py-3 text-muted-foreground">{idx + 1}</td>
-                  <td className="px-3 py-3 font-medium">
+                  <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
+                  <TableCell className="font-medium">
                     {s.team.name}
                     {s.team.group && (
                       <span className="ml-2 text-[10px] text-muted-foreground">
                         Group {s.team.group}
                       </span>
                     )}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular-nums">{s.played}</td>
-                  <td className="px-3 py-3 text-right tabular-nums">{s.wins}</td>
-                  <td className="px-3 py-3 text-right tabular-nums">{s.draws}</td>
-                  <td className="px-3 py-3 text-right tabular-nums">{s.losses}</td>
-                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">{s.played}</TableCell>
+                  <TableCell className="text-right tabular-nums">{s.wins}</TableCell>
+                  <TableCell className="text-right tabular-nums">{s.draws}</TableCell>
+                  <TableCell className="text-right tabular-nums">{s.losses}</TableCell>
+                  <TableCell className="text-right tabular-nums hidden sm:table-cell">
                     {s.goalsFor}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums hidden sm:table-cell">
                     {s.goalsAgainst}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular-nums hidden sm:table-cell">
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums hidden sm:table-cell">
                     {s.goalDiff > 0 ? `+${s.goalDiff}` : s.goalDiff}
-                  </td>
-                  <td className="px-3 py-3 text-right font-bold text-primary tabular-nums">
+                  </TableCell>
+                  <TableCell className="text-right font-bold text-primary tabular-nums">
                     {s.points}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
               {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={10} className="px-3 py-8 text-center text-muted-foreground">
+                <TableRow>
+                  <TableCell colSpan={10} className="h-24 text-center">
                     No teams found.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
 
@@ -196,13 +199,13 @@ function TeamModal({ teamId, onClose }: { teamId: string; onClose: () => void })
               <p className="text-xs text-muted-foreground">Group {team.data.group}</p>
             )}
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="p-1.5 rounded-md hover:bg-secondary transition-colors"
-            aria-label="Close"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
         <div className="px-5 py-3 border-b border-border flex gap-1.5 overflow-x-auto bg-muted/20">
           {tabs.map((t) => (

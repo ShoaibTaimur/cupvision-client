@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { ArrowRight, ShieldCheck, TimerReset, Trophy } from "lucide-react";
 import { SectionReveal } from "@/components/section-reveal";
 import { SiteFooter, SiteHeader } from "@/components/site-chrome";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({ meta: [{ title: "Admin login — CupVision" }] }),
@@ -106,40 +108,40 @@ function AdminLogin() {
                 <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Username
                 </label>
-                <input
+                <Input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoComplete="username"
                   placeholder="Enter admin username"
-                  className="mt-2 h-12 w-full rounded-2xl border border-border bg-background/70 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  className="mt-2 h-12 w-full rounded-2xl bg-background/70 px-4 text-sm"
                 />
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                   Password
                 </label>
-                <input
+                <Input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
                   placeholder="Enter admin password"
-                  className="mt-2 h-12 w-full rounded-2xl border border-border bg-background/70 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+                  className="mt-2 h-12 w-full rounded-2xl bg-background/70 px-4 text-sm"
                 />
               </div>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
+              className="mt-6 h-12 w-full rounded-2xl font-semibold"
             >
               {loading ? "Signing in..." : "Sign in"}
-              {!loading && <ArrowRight className="size-4" />}
-            </button>
+              {!loading && <ArrowRight className="size-4 ml-2" />}
+            </Button>
 
             <p className="mt-4 text-center text-[11px] leading-5 text-muted-foreground">
               Credentials checked against backend env vars.

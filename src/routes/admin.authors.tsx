@@ -7,6 +7,10 @@ import { Skeleton } from "@/components/skeleton";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Field } from "./admin.teams";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/admin/authors")({
   head: () => ({ meta: [{ title: "Authors — CupVision Admin" }] }),
@@ -65,15 +69,15 @@ function AuthorsAdmin() {
           <h1 className="text-2xl font-bold">Authors</h1>
           <p className="text-sm text-muted-foreground">People behind the site.</p>
         </div>
-        <button
+        <Button
           onClick={() => {
             setEditing(null);
             setForm(empty);
           }}
-          className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1.5"
+          className="flex items-center gap-1.5"
         >
           <Plus className="size-4" /> New author
-        </button>
+        </Button>
       </div>
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-6">
@@ -81,44 +85,47 @@ function AuthorsAdmin() {
           {list.isLoading ? (
             <Skeleton className="h-64" />
           ) : (
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase text-muted-foreground border-b border-border">
-                <tr>
-                  <th className="px-3 py-3 text-left">Name</th>
-                  <th className="px-3 py-3 text-left">Role</th>
-                  <th className="px-3 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {list.data?.map((a) => (
-                  <tr key={a._id} className="border-b border-border last:border-0">
-                    <td className="px-3 py-2 font-medium">{a.name}</td>
-                    <td className="px-3 py-2 text-muted-foreground">{a.role}</td>
-                    <td className="px-3 py-2 text-right space-x-1">
-                      <button
+                  <TableRow key={a._id}>
+                    <TableCell className="font-medium">{a.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{a.role}</TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => startEdit(a)}
-                        className="p-1.5 rounded-md hover:bg-secondary"
                       >
                         <Pencil className="size-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => confirm(`Delete ${a.name}?`) && del.mutate(a._id)}
-                        className="p-1.5 rounded-md hover:bg-destructive/20 text-destructive"
+                        className="text-destructive hover:bg-destructive/20 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
                 {list.data?.length === 0 && (
-                  <tr>
-                    <td colSpan={3} className="px-3 py-8 text-center text-muted-foreground">
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
                       No authors.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </div>
 
@@ -131,63 +138,56 @@ function AuthorsAdmin() {
         >
           <h2 className="font-semibold">{editing ? "Edit author" : "New author"}</h2>
           <Field label="Name *">
-            <input
+            <Input
               required
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Role *">
-            <input
+            <Input
               required
               value={form.role}
               onChange={(e) => setForm({ ...form, role: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Image URL">
-            <input
+            <Input
               value={form.image}
               onChange={(e) => setForm({ ...form, image: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Bio">
-            <textarea
+            <Textarea
               value={form.bio}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               rows={3}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="GitHub URL">
-            <input
+            <Input
               value={form.github}
               onChange={(e) => setForm({ ...form, github: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="LinkedIn URL">
-            <input
+            <Input
               value={form.linkedin}
               onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Portfolio URL">
-            <input
+            <Input
               value={form.portfolio}
               onChange={(e) => setForm({ ...form, portfolio: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
-          <button
+          <Button
             disabled={save.isPending}
-            className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="w-full"
           >
             {save.isPending ? "Saving..." : editing ? "Update" : "Create"}
-          </button>
+          </Button>
         </form>
       </div>
     </AdminShell>

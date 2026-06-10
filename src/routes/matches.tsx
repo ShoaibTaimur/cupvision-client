@@ -6,6 +6,8 @@ import { MatchCard } from "@/components/match-card";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
 import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({
@@ -75,36 +77,42 @@ function MatchesPage() {
 
       <div className="flex flex-col md:flex-row gap-3 mb-6">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground z-10" />
+          <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search by team, stadium, city, match #"
-            className="w-full bg-card border border-border rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="pl-10"
           />
         </div>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s.replace("_", " ")}
-            </option>
-          ))}
-        </select>
-        <select
-          value={group}
-          onChange={(e) => setGroup(e.target.value)}
-          className="bg-card border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          {GROUPS.map((g) => (
-            <option key={g} value={g}>
-              {g === "all" ? "All groups" : `Group ${g}`}
-            </option>
-          ))}
-        </select>
+        <div className="w-full md:w-48">
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUSES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s.replace("_", " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="w-full md:w-48">
+          <Select value={group} onValueChange={setGroup}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {GROUPS.map((g) => (
+                <SelectItem key={g} value={g}>
+                  {g === "all" ? "All groups" : `Group ${g}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {matches.isLoading ? (

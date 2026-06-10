@@ -9,6 +9,11 @@ import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Trophy } from "lucide-react";
 import { Field } from "./admin.teams";
 import { formatDateTime } from "@/lib/date";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/admin/matches")({
   head: () => ({ meta: [{ title: "Matches — CupVision Admin" }] }),
@@ -101,16 +106,16 @@ function MatchesAdmin() {
           <h1 className="text-2xl font-bold">Matches</h1>
           <p className="text-sm text-muted-foreground">Create, edit and submit results.</p>
         </div>
-        <button
+        <Button
           onClick={() => {
             setEditing(null);
             setForm(empty);
             setFormModalOpen(true);
           }}
-          className="bg-primary text-primary-foreground rounded-md px-3 py-1.5 text-sm font-medium flex items-center gap-1.5"
+          className="flex items-center gap-1.5"
         >
           <Plus className="size-4" /> New match
-        </button>
+        </Button>
       </div>
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-6">
@@ -118,30 +123,29 @@ function MatchesAdmin() {
           {list.isLoading ? (
             <Skeleton className="h-64" />
           ) : (
-            <table className="w-full text-sm">
-              <thead className="text-xs uppercase text-muted-foreground border-b border-border">
-                <tr>
-                  <th className="text-left px-3 py-3">#</th>
-                  <th className="text-left px-3 py-3">Match</th>
-                  <th className="text-left px-3 py-3 hidden sm:table-cell">When</th>
-                  <th className="text-left px-3 py-3 hidden sm:table-cell">Status</th>
-                  <th className="text-right px-3 py-3 hidden md:table-cell">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Match</TableHead>
+                  <TableHead className="hidden sm:table-cell">When</TableHead>
+                  <TableHead className="hidden sm:table-cell">Status</TableHead>
+                  <TableHead className="text-right hidden md:table-cell">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {list.data?.map((m) => (
-                  <tr
+                  <TableRow
                     key={m._id}
-                    className="border-b border-border last:border-0 md:cursor-default cursor-pointer hover:bg-secondary/50 md:hover:bg-transparent"
+                    className="md:cursor-default cursor-pointer md:hover:bg-transparent"
                     onClick={(e) => {
-                      // Only trigger popup on small screens
                       if (window.matchMedia("(min-width: 768px)").matches) return;
                       e.stopPropagation();
                       setActionsFor(m);
                     }}
                   >
-                    <td className="px-3 py-2 tabular-nums">{m.matchNumber}</td>
-                    <td className="px-3 py-2">
+                    <TableCell className="tabular-nums">{m.matchNumber}</TableCell>
+                    <TableCell>
                       <div className="font-medium">
                         {m.homeTeam?.name} vs {m.awayTeam?.name}
                       </div>
@@ -153,45 +157,49 @@ function MatchesAdmin() {
                         <span>{formatDateTime(m.date, m.time)}</span>
                         <StatusBadge status={m.status} />
                       </div>
-                    </td>
-                    <td className="px-3 py-2 text-muted-foreground text-xs hidden sm:table-cell">
+                    </TableCell>
+                    <TableCell className="text-muted-foreground hidden sm:table-cell">
                       {formatDateTime(m.date, m.time)}
-                    </td>
-                    <td className="px-3 py-2 hidden sm:table-cell">
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       <StatusBadge status={m.status} />
-                    </td>
-                    <td className="px-3 py-2 text-right space-x-1 whitespace-nowrap hidden md:table-cell">
-                      <button
+                    </TableCell>
+                    <TableCell className="text-right space-x-1 whitespace-nowrap hidden md:table-cell">
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setResultFor(m)}
-                        className="p-1.5 rounded-md hover:bg-secondary"
                         title="Submit result"
                       >
                         <Trophy className="size-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => startEdit(m)}
-                        className="p-1.5 rounded-md hover:bg-secondary"
                       >
                         <Pencil className="size-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => confirm("Delete match?") && del.mutate(m._id)}
-                        className="p-1.5 rounded-md hover:bg-destructive/20 text-destructive"
+                        className="text-destructive hover:bg-destructive/20 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
                 {list.data?.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-3 py-8 text-center text-muted-foreground">
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No matches.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           )}
         </div>
 
@@ -207,135 +215,136 @@ function MatchesAdmin() {
           </h2>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Match # *">
-              <input
+              <Input
                 type="number"
                 min={1}
                 required
                 value={form.matchNumber}
                 onChange={(e) => setForm({ ...form, matchNumber: Number(e.target.value) })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Status *">
-              <select
+              <Select
                 value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                onValueChange={(value) => setForm({ ...form, status: value as any })}
               >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replace("_", " ")}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s.replace("_", " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </div>
           <Field label="Live provider match ID">
-            <input
+            <Input
               value={form.externalMatchId}
               onChange={(e) => setForm({ ...form, externalMatchId: e.target.value })}
               placeholder="Provider fixture or match id"
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Home team *">
-            <select
+            <Select
               required
               value={form.homeTeamId}
-              onChange={(e) => setForm({ ...form, homeTeamId: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+              onValueChange={(value) => setForm({ ...form, homeTeamId: value })}
             >
-              <option value="">— select —</option>
-              {teams.data?.map((t) => (
-                <option key={t._id} value={t._id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="— select —" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.data?.map((t) => (
+                  <SelectItem key={t._id} value={t._id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <Field label="Away team *">
-            <select
+            <Select
               required
               value={form.awayTeamId}
-              onChange={(e) => setForm({ ...form, awayTeamId: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+              onValueChange={(value) => setForm({ ...form, awayTeamId: value })}
             >
-              <option value="">— select —</option>
-              {teams.data?.map((t) => (
-                <option key={t._id} value={t._id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="— select —" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.data?.map((t) => (
+                  <SelectItem key={t._id} value={t._id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Date *">
-              <input
+              <Input
                 required
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Time *">
-              <input
+              <Input
                 required
                 type="time"
                 value={form.time}
                 onChange={(e) => setForm({ ...form, time: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
           </div>
           <Field label="Stadium *">
-            <input
+            <Input
               required
               value={form.stadium}
               onChange={(e) => setForm({ ...form, stadium: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="City *">
-              <input
+              <Input
                 required
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Group (A-L)">
-              <input
+              <Input
                 value={form.group}
                 maxLength={1}
                 onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
           </div>
           <Field label="Stage *">
-            <input
+            <Input
               required
               value={form.stage}
               onChange={(e) => setForm({ ...form, stage: e.target.value })}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
           <Field label="Notes">
-            <textarea
+            <Textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={2}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
             />
           </Field>
-          <button
+          <Button
             disabled={save.isPending}
-            className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            className="w-full"
           >
             {save.isPending ? "Saving..." : editing ? "Update" : "Create"}
-          </button>
+          </Button>
         </form>
       </div>
 
@@ -390,135 +399,136 @@ function MatchesAdmin() {
           >
             <div className="grid grid-cols-2 gap-3">
               <Field label="Match # *">
-                <input
+                <Input
                   type="number"
                   min={1}
                   required
                   value={form.matchNumber}
                   onChange={(e) => setForm({ ...form, matchNumber: Number(e.target.value) })}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
                 />
               </Field>
               <Field label="Status *">
-                <select
+                <Select
                   value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                  onValueChange={(value) => setForm({ ...form, status: value as any })}
                 >
-                  {STATUSES.map((s) => (
-                    <option key={s} value={s}>
-                      {s.replace("_", " ")}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s.replace("_", " ")}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </Field>
             </div>
             <Field label="Live provider match ID">
-              <input
+              <Input
                 value={form.externalMatchId}
                 onChange={(e) => setForm({ ...form, externalMatchId: e.target.value })}
                 placeholder="Provider fixture or match id"
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Home team *">
-              <select
+              <Select
                 required
                 value={form.homeTeamId}
-                onChange={(e) => setForm({ ...form, homeTeamId: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                onValueChange={(value) => setForm({ ...form, homeTeamId: value })}
               >
-                <option value="">— select —</option>
-                {teams.data?.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="— select —" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.data?.map((t) => (
+                    <SelectItem key={t._id} value={t._id}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field label="Away team *">
-              <select
+              <Select
                 required
                 value={form.awayTeamId}
-                onChange={(e) => setForm({ ...form, awayTeamId: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+                onValueChange={(value) => setForm({ ...form, awayTeamId: value })}
               >
-                <option value="">— select —</option>
-                {teams.data?.map((t) => (
-                  <option key={t._id} value={t._id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="— select —" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teams.data?.map((t) => (
+                    <SelectItem key={t._id} value={t._id}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Date *">
-                <input
+                <Input
                   required
                   type="date"
                   value={form.date}
                   onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
                 />
               </Field>
               <Field label="Time *">
-                <input
+                <Input
                   required
                   type="time"
                   value={form.time}
                   onChange={(e) => setForm({ ...form, time: e.target.value })}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
                 />
               </Field>
             </div>
             <Field label="Stadium *">
-              <input
+              <Input
                 required
                 value={form.stadium}
                 onChange={(e) => setForm({ ...form, stadium: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="City *">
-                <input
+                <Input
                   required
                   value={form.city}
                   onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
                 />
               </Field>
               <Field label="Group (A-L)">
-                <input
+                <Input
                   value={form.group}
                   maxLength={1}
                   onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
-                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
                 />
               </Field>
             </div>
             <Field label="Stage *">
-              <input
+              <Input
                 required
                 value={form.stage}
                 onChange={(e) => setForm({ ...form, stage: e.target.value })}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
             <Field label="Notes">
-              <textarea
+              <Textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={2}
-                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
               />
             </Field>
-            <button
+            <Button
               disabled={save.isPending}
-              className="w-full bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+              className="w-full"
             >
               {save.isPending ? "Saving..." : editing ? "Update" : "Create"}
-            </button>
+            </Button>
           </form>
         </FormModal>
       )}
@@ -661,38 +671,37 @@ function ResultModal({
         </p>
         <div className="grid grid-cols-2 gap-3">
           <Field label={match.homeTeam?.name || "Home"}>
-            <input
+            <Input
               type="number"
               min={0}
               value={home}
               onChange={(e) => setHome(Number(e.target.value))}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-lg text-center font-bold"
+              className="text-lg text-center font-bold"
             />
           </Field>
           <Field label={match.awayTeam?.name || "Away"}>
-            <input
+            <Input
               type="number"
               min={0}
               value={away}
               onChange={(e) => setAway(Number(e.target.value))}
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-lg text-center font-bold"
+              className="text-lg text-center font-bold"
             />
           </Field>
         </div>
         <div className="flex justify-end gap-2 mt-4">
-          <button
+          <Button
+            variant="outline"
             onClick={onClose}
-            className="px-3 py-1.5 text-sm rounded-md border border-border hover:bg-secondary"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => submit.mutate()}
             disabled={submit.isPending}
-            className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
             {submit.isPending ? "Saving..." : "Save result"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -4,6 +4,8 @@ import { AdminShell } from "@/components/admin-shell";
 import { API_URL, getToken } from "@/lib/api";
 import { toast } from "sonner";
 import { Download, FileUp, CheckCircle2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/admin/players-import")({
   head: () => ({ meta: [{ title: "Players CSV Import — CupVision Admin" }] }),
@@ -119,20 +121,21 @@ function PlayersImportPage() {
               />
             </label>
             <div className="flex gap-2 mt-3">
-              <button
+              <Button
+                variant="secondary"
                 disabled={!file || validating}
                 onClick={onValidate}
-                className="flex-1 bg-secondary hover:bg-secondary/80 rounded-md py-2 text-sm font-medium disabled:opacity-50"
+                className="flex-1"
               >
                 {validating ? "Validating..." : "3. Validate"}
-              </button>
-              <button
+              </Button>
+              <Button
                 disabled={!file || !result?.valid || committing}
                 onClick={onCommit}
-                className="flex-1 bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                className="flex-1"
               >
                 {committing ? "Importing..." : "4. Confirm import"}
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -168,28 +171,28 @@ function PlayersImportPage() {
                   <div className="text-xs text-muted-foreground mb-2">
                     Preview (first {result.preview.length})
                   </div>
-                  <table className="w-full text-xs">
-                    <thead className="text-muted-foreground border-b border-border">
-                      <tr>
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow>
                         {Object.keys(result.preview[0]).map((k) => (
-                          <th key={k} className="px-2 py-1 text-left">
+                          <TableHead key={k}>
                             {k}
-                          </th>
+                          </TableHead>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {result.preview.map((r, i) => (
-                        <tr key={i} className="border-b border-border last:border-0">
+                        <TableRow key={i}>
                           {Object.values(r).map((v, j) => (
-                            <td key={j} className="px-2 py-1 whitespace-nowrap">
+                            <TableCell key={j} className="whitespace-nowrap">
                               {v == null || v === "" ? "—" : String(v)}
-                            </td>
+                            </TableCell>
                           ))}
-                        </tr>
+                        </TableRow>
                       ))}
-                    </tbody>
-                  </table>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </div>
@@ -198,48 +201,48 @@ function PlayersImportPage() {
 
         <aside className="bg-card border border-border rounded-lg p-5 h-fit text-xs">
           <h3 className="font-semibold text-sm mb-3">CSV format</h3>
-          <table className="w-full">
-            <thead className="text-muted-foreground">
-              <tr>
-                <th className="text-left py-1">Column</th>
-                <th className="text-left py-1">Notes</th>
-              </tr>
-            </thead>
-            <tbody className="text-muted-foreground">
-              <tr>
-                <td className="font-mono">teamName</td>
-                <td>required, auto-created</td>
-              </tr>
-              <tr>
-                <td className="font-mono">name</td>
-                <td>required, player full name</td>
-              </tr>
-              <tr>
-                <td className="font-mono">position</td>
-                <td>required: GK, DEF, MID, FWD</td>
-              </tr>
-              <tr>
-                <td className="font-mono">jerseyNumber</td>
-                <td>optional 1–99, unique per team</td>
-              </tr>
-              <tr>
-                <td className="font-mono">dateOfBirth</td>
-                <td>optional YYYY-MM-DD</td>
-              </tr>
-              <tr>
-                <td className="font-mono">height</td>
-                <td>optional cm, 140–230</td>
-              </tr>
-              <tr>
-                <td className="font-mono">club</td>
-                <td>optional</td>
-              </tr>
-              <tr>
-                <td className="font-mono">nationality</td>
-                <td>optional</td>
-              </tr>
-            </tbody>
-          </table>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Column</TableHead>
+                <TableHead>Notes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell className="font-mono">teamName</TableCell>
+                <TableCell>required, auto-created</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">name</TableCell>
+                <TableCell>required, player full name</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">position</TableCell>
+                <TableCell>required: GK, DEF, MID, FWD</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">jerseyNumber</TableCell>
+                <TableCell>optional 1–99, unique per team</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">dateOfBirth</TableCell>
+                <TableCell>optional YYYY-MM-DD</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">height</TableCell>
+                <TableCell>optional cm, 140–230</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">club</TableCell>
+                <TableCell>optional</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell className="font-mono">nationality</TableCell>
+                <TableCell>optional</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </aside>
       </div>
     </AdminShell>
