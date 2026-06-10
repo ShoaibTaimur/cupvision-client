@@ -68,8 +68,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      {/* Desktop sidebar */}
+    <div className="min-h-screen flex flex-col md:flex-row md:h-screen md:overflow-hidden">
       <aside className="w-60 shrink-0 border-r border-border bg-card hidden md:flex flex-col">
         <Link to="/" className="flex items-center gap-2 px-5 py-4 border-b border-border">
           <div className="size-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground">
@@ -80,7 +79,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <div className="text-[10px] text-muted-foreground">Admin</div>
           </div>
         </Link>
-        <nav className="flex-1 p-2 space-y-1">
+        <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
           {NAV.map((n) => {
             const active = path === n.to;
             return (
@@ -110,7 +109,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile top bar with hamburger */}
       <header className="md:hidden sticky top-0 z-40 backdrop-blur-lg bg-background/80 border-b border-border w-full">
         <div className="h-14 px-4 flex items-center justify-between">
           <Link to="/admin/dashboard" className="flex items-center gap-2">
@@ -132,7 +130,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      {/* Mobile slide-in drawer (portaled) */}
       {open &&
         typeof document !== "undefined" &&
         createPortal(
@@ -203,7 +200,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           document.body,
         )}
 
-      <main className="flex-1 p-6 overflow-x-hidden">{children}</main>
+      <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">{children}</main>
     </div>
   );
 }
