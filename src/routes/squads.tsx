@@ -4,9 +4,30 @@ import { useMemo, useState, useEffect } from "react";
 import { api, Player, Team } from "@/lib/api";
 import { SectionReveal } from "@/components/section-reveal";
 import { PlayerCardSkeleton, TeamListSkeleton } from "@/components/skeleton";
-import { Search, Shield, Shirt, User, ChevronDown, X, Calendar, Ruler, Building2 } from "lucide-react";
-import { createPortal } from "react-dom";
+import { Search, Shield, Shirt, User, ChevronDown, Calendar, Ruler, Building2 } from "lucide-react";
 import playerImagesData from "@/data/player-images.json";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 
 const playerImages = playerImagesData as Record<string, string>;
 
@@ -57,16 +78,6 @@ function SquadsPage() {
   const [q, setQ] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-
-  useEffect(() => {
-    if (pickerOpen || selectedPlayer) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-  }, [pickerOpen, selectedPlayer]);
 
   const teamsQ = useQuery({
     queryKey: ["teams"],
@@ -127,110 +138,114 @@ function SquadsPage() {
         </p>
       </div>
 
-      {/* Mobile/tablet: team picker as a button that opens a modal */}
+      {/* Mobile/tablet: team picker button → opens Drawer */}
       <div className="lg:hidden mb-4">
-        <button
+        <Button
+          variant="outline"
           onClick={() => setPickerOpen(true)}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-card border border-border hover:bg-secondary transition-colors text-left"
+          className="w-full flex items-center gap-3 px-4 py-3 h-auto justify-start"
         >
           <Shield className="size-5 text-primary shrink-0" />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 text-left">
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
               Team
             </div>
             <div className="font-semibold truncate">{activeTeam?.name || "Select a team"}</div>
           </div>
           <ChevronDown className="size-4 text-muted-foreground shrink-0" />
-        </button>
+        </Button>
       </div>
 
       <div className="grid lg:grid-cols-[300px_1fr] gap-6">
         {/* Desktop sidebar team picker */}
-        <aside className="hidden lg:block bg-card border border-border rounded-lg p-3 h-fit lg:sticky lg:top-20">
-          <TeamList
-            teams={filteredTeams}
-            loading={teamsQ.isLoading}
-            q={q}
-            setQ={setQ}
-            teamId={teamId}
-            onPick={(id) => {
-              setTeamId(id);
-              setPos("all");
-            }}
-          />
+        <aside className="hidden lg:block">
+          <Card className="h-fit lg:sticky lg:top-20 p-3">
+            <TeamList
+              teams={filteredTeams}
+              loading={teamsQ.isLoading}
+              q={q}
+              setQ={setQ}
+              teamId={teamId}
+              onPick={(id) => {
+                setTeamId(id);
+                setPos("all");
+              }}
+            />
+          </Card>
         </aside>
 
         {/* Players panel */}
         <section className="min-w-0">
           {!teamId ? (
-            <div className="bg-card border border-border rounded-lg p-12 text-center">
+            <Card className="p-12 text-center">
               <Shirt className="size-12 mx-auto mb-4 text-muted-foreground" />
               <h2 className="font-semibold mb-1">Select a team</h2>
               <p className="text-sm text-muted-foreground">
                 Pick a team from the list to view its squad.
               </p>
-            </div>
+            </Card>
           ) : (
             <div className="space-y-4">
-              <div className="bg-card border border-border rounded-lg p-5">
-                <div className="flex items-center gap-3">
-                  <div className="size-12 rounded-md bg-primary/15 flex items-center justify-center text-primary">
-                    <Shield className="size-6" />
+              <Card>
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="size-12 rounded-md bg-primary/15 flex items-center justify-center text-primary">
+                      <Shield className="size-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">{activeTeam?.name}</h2>
+                      <p className="text-xs text-muted-foreground">
+                        {counts.all} players · {counts.GK} GK · {counts.DEF} DEF · {counts.MID} MID ·{" "}
+                        {counts.FWD} FWD
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold">{activeTeam?.name}</h2>
-                    <p className="text-xs text-muted-foreground">
-                      {counts.all} players · {counts.GK} GK · {counts.DEF} DEF · {counts.MID} MID ·{" "}
-                      {counts.FWD} FWD
-                    </p>
-                  </div>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
 
               {coach && (
-                <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3">
-                  <div className="size-12 rounded-full bg-primary/15 text-primary flex items-center justify-center">
-                    <User className="size-6" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
-                      {coach.role || "Head Coach"}
-                    </div>
-                    <div className="font-semibold truncate">{coach.name}</div>
-                    {coach.nationality && (
-                      <div className="text-xs text-muted-foreground truncate">
-                        {coach.nationality}
+                <Card>
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <Avatar className="size-12">
+                      <AvatarFallback className="bg-primary/15 text-primary">
+                        <User className="size-6" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+                        {coach.role || "Head Coach"}
                       </div>
-                    )}
-                  </div>
-                </div>
+                      <div className="font-semibold truncate">{coach.name}</div>
+                      {coach.nationality && (
+                        <div className="text-xs text-muted-foreground truncate">
+                          {coach.nationality}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {/* Position tabs */}
-              <div className="flex flex-wrap gap-2">
-                {POS.map((p) => {
-                  const active = pos === p.id;
-                  const count = counts[p.id] ?? 0;
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => setPos(p.id)}
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm border transition-colors ${
-                        active
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
-                      }`}
-                    >
-                      {p.label}
-                      <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded ${active ? "bg-primary-foreground/20" : "bg-secondary"}`}
+              <Tabs value={pos} onValueChange={(v) => setPos(v as (typeof POS)[number]["id"])}>
+                <TabsList className="flex flex-wrap h-auto gap-1 bg-transparent p-0">
+                  {POS.map((p) => {
+                    const count = counts[p.id] ?? 0;
+                    return (
+                      <TabsTrigger
+                        key={p.id}
+                        value={p.id}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm border border-border data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:shadow-none data-[state=inactive]:bg-card"
                       >
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+                        {p.label}
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-secondary data-[state=active]:bg-primary-foreground/20">
+                          {count}
+                        </span>
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </Tabs>
 
               {playersQ.isLoading ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -239,9 +254,9 @@ function SquadsPage() {
                   ))}
                 </div>
               ) : grouped.length === 0 ? (
-                <div className="bg-card border border-border rounded-lg p-12 text-center text-sm text-muted-foreground">
+                <Card className="p-12 text-center text-sm text-muted-foreground">
                   No players in this category.
-                </div>
+                </Card>
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {grouped.map((p) => (
@@ -254,52 +269,36 @@ function SquadsPage() {
         </section>
       </div>
 
-      {/* Mobile team picker modal */}
-      {pickerOpen &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div className="lg:hidden fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
-            <div
-              className="absolute inset-0 bg-background/70 backdrop-blur-md"
-              onClick={() => setPickerOpen(false)}
+      {/* Mobile team picker — Drawer */}
+      <Drawer open={pickerOpen} onOpenChange={setPickerOpen}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader>
+            <DrawerTitle>Select a team</DrawerTitle>
+            <DrawerDescription className="sr-only">Choose a team to view its squad</DrawerDescription>
+          </DrawerHeader>
+          <div className="p-3 flex-1 overflow-hidden flex flex-col">
+            <TeamList
+              teams={filteredTeams}
+              loading={teamsQ.isLoading}
+              q={q}
+              setQ={setQ}
+              teamId={teamId}
+              onPick={(id) => {
+                setTeamId(id);
+                setPos("all");
+                setPickerOpen(false);
+              }}
             />
-            <div className="relative bg-card border border-border rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md max-h-[85vh] flex flex-col shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <div className="font-semibold">Select a team</div>
-                <button
-                  onClick={() => setPickerOpen(false)}
-                  className="inline-flex items-center justify-center size-9 rounded-md hover:bg-secondary"
-                  aria-label="Close"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-              <div className="p-3 flex-1 overflow-hidden flex flex-col">
-                <TeamList
-                  teams={filteredTeams}
-                  loading={teamsQ.isLoading}
-                  q={q}
-                  setQ={setQ}
-                  teamId={teamId}
-                  onPick={(id) => {
-                    setTeamId(id);
-                    setPos("all");
-                    setPickerOpen(false);
-                  }}
-                />
-              </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+          </div>
+        </DrawerContent>
+      </Drawer>
 
-      {/* Player details modal */}
-      {selectedPlayer &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <PlayerModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />,
-          document.body,
-        )}
+      {/* Player details — Dialog */}
+      <Dialog open={!!selectedPlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)}>
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden gap-0 border-border">
+          {selectedPlayer && <PlayerModalContent player={selectedPlayer} />}
+        </DialogContent>
+      </Dialog>
     </SectionReveal>
   );
 }
@@ -323,39 +322,40 @@ function TeamList({
     <>
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <input
+        <Input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search teams..."
-          className="w-full bg-background border border-border rounded-md pl-9 pr-3 py-2 text-sm"
+          className="pl-9"
         />
       </div>
       {loading ? (
         <TeamListSkeleton count={8} />
       ) : (
-        <div className="flex-1 max-h-[70vh] overflow-y-auto space-y-1 pr-1">
-          {teams.map((t) => {
-            const active = t._id === teamId;
-            return (
-              <button
-                key={t._id}
-                onClick={() => onPick(t._id)}
-                className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
-                  active
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                <Shield className="size-4 shrink-0" />
-                <span className="flex-1 text-left truncate">{t.name}</span>
-                {t.group && <span className="text-[10px] opacity-70">Group {t.group}</span>}
-              </button>
-            );
-          })}
-          {teams.length === 0 && (
-            <div className="text-xs text-muted-foreground text-center py-8">No teams found</div>
-          )}
-        </div>
+        <ScrollArea className="max-h-[70vh]">
+          <div className="space-y-1 pr-1">
+            {teams.map((t) => {
+              const active = t._id === teamId;
+              return (
+                <Button
+                  key={t._id}
+                  variant={active ? "default" : "ghost"}
+                  onClick={() => onPick(t._id)}
+                  className={`w-full justify-start gap-2 px-3 py-2 h-auto text-sm ${
+                    active ? "font-semibold" : "text-muted-foreground"
+                  }`}
+                >
+                  <Shield className="size-4 shrink-0" />
+                  <span className="flex-1 text-left truncate">{t.name}</span>
+                  {t.group && <span className="text-[10px] opacity-70">Group {t.group}</span>}
+                </Button>
+              );
+            })}
+            {teams.length === 0 && (
+              <div className="text-xs text-muted-foreground text-center py-8">No teams found</div>
+            )}
+          </div>
+        </ScrollArea>
       )}
     </>
   );
@@ -365,19 +365,22 @@ function PlayerCard({ p, onClick }: { p: Player; onClick: () => void }) {
   const imageUrl = playerImages[p._id];
 
   return (
-    <button
+    <Card
       onClick={onClick}
-      className="w-full text-left bg-card border border-border rounded-lg p-4 flex items-center gap-3 hover:border-primary/50 hover:bg-secondary/40 transition-all duration-200 cursor-pointer group"
+      className="p-4 flex items-center gap-3 hover:border-primary/50 hover:bg-secondary/40 transition-all duration-200 cursor-pointer group"
     >
-      <div className="size-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-200">
+      <Avatar className="size-12 ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-200">
         {imageUrl ? (
-          <img src={imageUrl} alt={p.name} className="w-full h-full object-cover" />
-        ) : p.jerseyNumber ? (
-          <span className="text-sm font-bold tabular-nums">{p.jerseyNumber}</span>
-        ) : (
-          <User className="size-5 text-muted-foreground" />
-        )}
-      </div>
+          <AvatarImage src={imageUrl} alt={p.name} />
+        ) : null}
+        <AvatarFallback className="bg-secondary">
+          {p.jerseyNumber ? (
+            <span className="text-sm font-bold tabular-nums">{p.jerseyNumber}</span>
+          ) : (
+            <User className="size-5 text-muted-foreground" />
+          )}
+        </AvatarFallback>
+      </Avatar>
       <div className="min-w-0 flex-1">
         <div className="font-semibold truncate">
           {p.jerseyNumber ? `#${p.jerseyNumber} ` : ""}
@@ -387,16 +390,17 @@ function PlayerCard({ p, onClick }: { p: Player; onClick: () => void }) {
           {p.club || p.nationality || "—"}
         </div>
       </div>
-      <span
-        className={`text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border shrink-0 ${POS_STYLES[p.position]}`}
+      <Badge
+        variant="outline"
+        className={`text-[10px] uppercase tracking-wide font-bold shrink-0 ${POS_STYLES[p.position]}`}
       >
         {p.position}
-      </span>
-    </button>
+      </Badge>
+    </Card>
   );
 }
 
-function PlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
+function PlayerModalContent({ player }: { player: Player }) {
   const imageUrl = playerImages[player._id];
   const gradient = POS_GRADIENT[player.position] || "from-primary/20 via-primary/5 to-transparent";
 
@@ -423,125 +427,100 @@ function PlayerModal({ player, onClose }: { player: Player; onClose: () => void 
           ? "Midfielder"
           : "Forward";
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
   return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
-      style={{ animation: "cvFadeIn 0.15s ease-out" }}
-    >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={onClose} />
+    <>
+      <DialogHeader className="sr-only">
+        <DialogTitle>{player.name}</DialogTitle>
+        <DialogDescription>{posLabel} — {player.nationality || "Unknown"}</DialogDescription>
+      </DialogHeader>
 
-      {/* Modal panel */}
+      {/* Position-colored gradient header */}
       <div
-        className="relative bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
-        style={{ animation: "cvScaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1)" }}
-      >
-        {/* Position-colored gradient header */}
-        <div
-          className={`absolute inset-x-0 top-0 h-44 bg-gradient-to-b ${gradient} pointer-events-none`}
-        />
+        className={`absolute inset-x-0 top-0 h-44 bg-gradient-to-b ${gradient} pointer-events-none`}
+      />
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 inline-flex items-center justify-center size-8 rounded-full bg-background/60 hover:bg-secondary border border-border/50 backdrop-blur-sm transition-colors"
-          aria-label="Close"
-        >
-          <X className="size-4" />
-        </button>
+      {/* Avatar + name section */}
+      <div className="relative pt-8 pb-5 px-6 flex flex-col items-center text-center">
+        {/* Jersey number — top left */}
+        {player.jerseyNumber && (
+          <div className="absolute top-8 left-6 text-xs font-bold text-muted-foreground">
+            #{player.jerseyNumber}
+          </div>
+        )}
 
-        {/* Avatar + name section */}
-        <div className="relative pt-8 pb-5 px-6 flex flex-col items-center text-center">
-          {/* Jersey number — top left */}
-          {player.jerseyNumber && (
-            <div className="absolute top-8 left-6 text-xs font-bold text-muted-foreground">
-              #{player.jerseyNumber}
-            </div>
-          )}
-
-          {/* Large avatar */}
-          <div className="size-32 rounded-full bg-secondary border-4 border-border flex items-center justify-center overflow-hidden shadow-xl mb-4">
-            {imageUrl ? (
-              <img src={imageUrl} alt={player.name} className="w-full h-full object-cover" />
-            ) : player.jerseyNumber ? (
+        {/* Large avatar */}
+        <Avatar className="size-32 border-4 border-border shadow-xl mb-4">
+          {imageUrl ? (
+            <AvatarImage src={imageUrl} alt={player.name} />
+          ) : null}
+          <AvatarFallback className="bg-secondary">
+            {player.jerseyNumber ? (
               <span className="text-4xl font-black tabular-nums text-foreground">
                 {player.jerseyNumber}
               </span>
             ) : (
               <User className="size-14 text-muted-foreground" />
             )}
-          </div>
+          </AvatarFallback>
+        </Avatar>
 
-          {/* Position badge */}
-          <span
-            className={`text-[11px] uppercase tracking-widest font-bold px-3 py-1 rounded-full border mb-3 ${POS_STYLES[player.position]}`}
-          >
-            {posLabel}
-          </span>
+        {/* Position badge */}
+        <Badge
+          variant="outline"
+          className={`text-[11px] uppercase tracking-widest font-bold rounded-full mb-3 ${POS_STYLES[player.position]}`}
+        >
+          {posLabel}
+        </Badge>
 
-          <h2 className="text-xl font-black tracking-tight leading-tight">{player.name}</h2>
-          {player.nationality && (
-            <p className="text-sm text-muted-foreground mt-1">{player.nationality}</p>
-          )}
-        </div>
-
-        {/* Details */}
-        {(player.club || formattedDob || player.height) && (
-          <div className="px-6 pb-6 grid grid-cols-1 gap-2.5">
-            {player.club && (
-              <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
-                <Building2 className="size-4 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
-                    Club
-                  </div>
-                  <div className="text-sm font-semibold truncate">{player.club}</div>
-                </div>
-              </div>
-            )}
-            {formattedDob && (
-              <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
-                <Calendar className="size-4 text-muted-foreground shrink-0" />
-                <div>
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
-                    Date of Birth
-                  </div>
-                  <div className="text-sm font-semibold">
-                    {formattedDob}
-                    {age !== null && (
-                      <span className="text-muted-foreground font-normal ml-1.5">({age} yrs)</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-            {player.height && (
-              <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
-                <Ruler className="size-4 text-muted-foreground shrink-0" />
-                <div>
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
-                    Height
-                  </div>
-                  <div className="text-sm font-semibold">{player.height} cm</div>
-                </div>
-              </div>
-            )}
-          </div>
+        <h2 className="text-xl font-black tracking-tight leading-tight">{player.name}</h2>
+        {player.nationality && (
+          <p className="text-sm text-muted-foreground mt-1">{player.nationality}</p>
         )}
       </div>
 
-      <style>{`
-        @keyframes cvFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes cvScaleIn { from { opacity: 0; transform: scale(0.92) } to { opacity: 1; transform: scale(1) } }
-      `}</style>
-    </div>
+      {/* Details */}
+      {(player.club || formattedDob || player.height) && (
+        <div className="px-6 pb-6 grid grid-cols-1 gap-2.5">
+          {player.club && (
+            <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+              <Building2 className="size-4 text-muted-foreground shrink-0" />
+              <div className="min-w-0">
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
+                  Club
+                </div>
+                <div className="text-sm font-semibold truncate">{player.club}</div>
+              </div>
+            </div>
+          )}
+          {formattedDob && (
+            <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+              <Calendar className="size-4 text-muted-foreground shrink-0" />
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
+                  Date of Birth
+                </div>
+                <div className="text-sm font-semibold">
+                  {formattedDob}
+                  {age !== null && (
+                    <span className="text-muted-foreground font-normal ml-1.5">({age} yrs)</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {player.height && (
+            <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+              <Ruler className="size-4 text-muted-foreground shrink-0" />
+              <div>
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
+                  Height
+                </div>
+                <div className="text-sm font-semibold">{player.height} cm</div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 }
