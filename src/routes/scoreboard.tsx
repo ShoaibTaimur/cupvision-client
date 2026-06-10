@@ -26,6 +26,7 @@ function ScoreboardPage() {
   const standings = useQuery({
     queryKey: ["scoreboard"],
     queryFn: () => api.get<Standing[]>("/api/stats/scoreboard"),
+    refetchInterval: 15_000,
   });
 
   const filtered = useMemo(() => {
@@ -159,6 +160,7 @@ function TeamModal({ teamId, onClose }: { teamId: string; onClose: () => void })
   const team = useQuery({
     queryKey: ["team", teamId],
     queryFn: () => api.get<Team>(`/api/teams/${teamId}`),
+    refetchInterval: 15_000,
   });
   const detail = useQuery({
     queryKey: ["team-stats", teamId],
@@ -170,6 +172,7 @@ function TeamModal({ teamId, onClose }: { teamId: string; onClose: () => void })
         losses: Match[];
         upcoming: Match[];
       }>(`/api/stats/team/${teamId}`),
+    refetchInterval: 15_000,
   });
   const d = detail.data;
   const tabs: Tab[] = ["overview", "wins", "draws", "losses", "upcoming"];

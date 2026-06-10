@@ -36,6 +36,7 @@ const empty = {
   group: "",
   status: "scheduled" as (typeof STATUSES)[number],
   notes: "",
+  externalMatchId: "",
 };
 
 function MatchesAdmin() {
@@ -89,6 +90,7 @@ function MatchesAdmin() {
       group: m.group || "",
       status: m.status,
       notes: m.notes || "",
+      externalMatchId: m.externalMatchId || "",
     });
   }
 
@@ -228,6 +230,14 @@ function MatchesAdmin() {
               </select>
             </Field>
           </div>
+          <Field label="Live provider match ID">
+            <input
+              value={form.externalMatchId}
+              onChange={(e) => setForm({ ...form, externalMatchId: e.target.value })}
+              placeholder="Provider fixture or match id"
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+            />
+          </Field>
           <Field label="Home team *">
             <select
               required
@@ -403,6 +413,14 @@ function MatchesAdmin() {
                 </select>
               </Field>
             </div>
+            <Field label="Live provider match ID">
+              <input
+                value={form.externalMatchId}
+                onChange={(e) => setForm({ ...form, externalMatchId: e.target.value })}
+                placeholder="Provider fixture or match id"
+                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm"
+              />
+            </Field>
             <Field label="Home team *">
               <select
                 required

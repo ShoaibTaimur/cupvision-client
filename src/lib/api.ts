@@ -86,6 +86,12 @@ export interface Match {
   winnerTeamId?: string | null;
   isDraw?: boolean;
   notes?: string;
+  externalMatchId?: string;
+  liveSource?: string;
+  liveMinute?: number | null;
+  liveStatusLabel?: string | null;
+  lastLiveSyncAt?: string | null;
+  liveSyncError?: string | null;
 }
 export interface Author {
   _id: string;

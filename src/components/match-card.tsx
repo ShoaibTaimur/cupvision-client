@@ -4,19 +4,36 @@ import { formatDate, formatTime } from "@/lib/date";
 
 const STATUS_STYLES: Record<string, string> = {
   scheduled: "bg-secondary text-secondary-foreground border border-white/5",
-  live: "bg-accent/20 text-accent border border-accent/30 animate-pulse",
+  live: "bg-red-500/15 text-red-300 border border-red-400/40",
   awaiting_result: "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20",
   completed: "bg-primary/10 text-primary border border-primary/20",
   cancelled: "bg-destructive/10 text-destructive border border-destructive/20",
   postponed: "bg-muted text-muted-foreground border border-white/5",
 };
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({
+  status,
+  minute,
+  label,
+}: {
+  status: string;
+  minute?: number | null;
+  label?: string | null;
+}) {
+  const isLive = status === "live";
+  const liveText = minute ? `${minute}'` : label || "LIVE";
   return (
     <span
-      className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-extrabold ${STATUS_STYLES[status] || "bg-muted text-muted-foreground"}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[9px] uppercase tracking-wider font-extrabold ${STATUS_STYLES[status] || "bg-muted text-muted-foreground"}`}
     >
-      {status.replace("_", " ")}
+      {isLive && (
+        <span className="relative flex size-1.5">
+          <span className="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping" />
+          <span className="relative inline-flex size-1.5 rounded-full bg-red-400" />
+        </span>
+      )}
+      <span>{isLive ? "live" : status.replace("_", " ")}</span>
+      {isLive && <span className="text-red-200/90">{liveText}</span>}
     </span>
   );
 }
@@ -91,7 +108,7 @@ export function MatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
           Match #{m.matchNumber} · {m.stage}
           {m.group ? ` · Group ${m.group}` : ""}
         </span>
-        <StatusBadge status={m.status} />
+        <StatusBadge status={m.status} minute={m.liveMinute} label={m.liveStatusLabel} />
       </div>
 
       {/* Core Teams Stacked Column-wise */}
@@ -108,7 +125,7 @@ export function MatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
             </span>
           )}
           {live && (
-            <span className="ml-auto font-black text-xs tabular-nums text-accent bg-accent/15 border border-accent/25 px-2 py-0.5 rounded-md animate-pulse">
+            <span className="ml-auto font-black text-xs tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-2 py-0.5 rounded-md animate-pulse">
               {m.homeScore ?? 0}
             </span>
           )}
@@ -136,7 +153,7 @@ export function MatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
             </span>
           )}
           {live && (
-            <span className="ml-auto font-black text-xs tabular-nums text-accent bg-accent/15 border border-accent/25 px-2 py-0.5 rounded-md animate-pulse">
+            <span className="ml-auto font-black text-xs tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-2 py-0.5 rounded-md animate-pulse">
               {m.awayScore ?? 0}
             </span>
           )}
@@ -157,6 +174,7 @@ export function MatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
 export function LiveMatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
   const home = m.homeTeam?.name || "TBD";
   const away = m.awayTeam?.name || "TBD";
+  const liveMeta = m.liveMinute ? `${m.liveMinute}'` : m.liveStatusLabel || "LIVE";
 
   return (
     <button
@@ -177,6 +195,9 @@ export function LiveMatchCard({ m, onClick }: { m: Match; onClick?: () => void }
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-accent">
               Live now
             </span>
+            <span className="rounded-full border border-red-400/40 bg-red-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-200">
+              {liveMeta}
+            </span>
           </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Match #{m.matchNumber} · {m.stage}
@@ -190,24 +211,24 @@ export function LiveMatchCard({ m, onClick }: { m: Match; onClick?: () => void }
           <div className="flex items-center gap-3">
             <TeamFlag team={m.homeTeam} />
             <span className="text-base font-black tracking-tight text-white truncate">{home}</span>
-            <span className="ml-auto font-black text-lg tabular-nums text-accent bg-accent/15 border border-accent/25 px-3 py-1 rounded-xl animate-pulse shadow-sm">
+            <span className="ml-auto font-black text-lg tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-3 py-1 rounded-xl animate-pulse shadow-sm">
               {m.homeScore ?? 0}
             </span>
           </div>
 
           {/* Separator / Versus */}
           <div className="flex items-center gap-2 pl-[36px]">
-            <span className="text-[9px] font-black uppercase tracking-widest text-accent/60">
+            <span className="text-[9px] font-black uppercase tracking-widest text-red-300/80">
               LIVE
             </span>
-            <div className="h-[1px] flex-1 bg-accent/20" />
+            <div className="h-[1px] flex-1 bg-red-400/20" />
           </div>
 
           {/* Away */}
           <div className="flex items-center gap-3">
             <TeamFlag team={m.awayTeam} />
             <span className="text-base font-black tracking-tight text-white truncate">{away}</span>
-            <span className="ml-auto font-black text-lg tabular-nums text-accent bg-accent/15 border border-accent/25 px-3 py-1 rounded-xl animate-pulse shadow-sm">
+            <span className="ml-auto font-black text-lg tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-3 py-1 rounded-xl animate-pulse shadow-sm">
               {m.awayScore ?? 0}
             </span>
           </div>
