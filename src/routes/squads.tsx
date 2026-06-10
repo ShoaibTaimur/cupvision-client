@@ -5,7 +5,6 @@ import { api, Player, Team } from "@/lib/api";
 import { SectionReveal } from "@/components/section-reveal";
 import { PlayerCardSkeleton, TeamListSkeleton } from "@/components/skeleton";
 import { Search, Shield, Shirt, User, ChevronDown, Calendar, Ruler, Building2 } from "lucide-react";
-import playerImagesData from "@/data/player-images.json";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,8 +27,6 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-
-const playerImages = playerImagesData as Record<string, string>;
 
 export const Route = createFileRoute("/squads")({
   head: () => ({
@@ -62,14 +59,14 @@ const POS_STYLES: Record<string, string> = {
   GK: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30",
   DEF: "bg-sky-500/15 text-sky-300 border-sky-500/30",
   MID: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-  FWD: "bg-rose-500/15 text-rose-300 border-rose-500/30",
+  FWD: "bg-primary/15 text-primary border-primary/30",
 };
 
 const POS_GRADIENT: Record<string, string> = {
   GK: "from-yellow-500/20 via-yellow-500/5 to-transparent",
   DEF: "from-sky-500/20 via-sky-500/5 to-transparent",
   MID: "from-emerald-500/20 via-emerald-500/5 to-transparent",
-  FWD: "from-rose-500/20 via-rose-500/5 to-transparent",
+  FWD: "from-primary/20 via-primary/5 to-transparent",
 };
 
 function SquadsPage() {
@@ -332,8 +329,8 @@ function TeamList({
       {loading ? (
         <TeamListSkeleton count={8} />
       ) : (
-        <ScrollArea className="max-h-[70vh]">
-          <div className="space-y-1 pr-1">
+        <ScrollArea className="h-[60vh] lg:h-[calc(100vh-14rem)]">
+          <div className="space-y-1 pr-3">
             {teams.map((t) => {
               const active = t._id === teamId;
               return (
@@ -362,7 +359,7 @@ function TeamList({
 }
 
 function PlayerCard({ p, onClick }: { p: Player; onClick: () => void }) {
-  const imageUrl = playerImages[p._id];
+  const imageUrl = p.image;
 
   return (
     <Card
@@ -401,7 +398,7 @@ function PlayerCard({ p, onClick }: { p: Player; onClick: () => void }) {
 }
 
 function PlayerModalContent({ player }: { player: Player }) {
-  const imageUrl = playerImages[player._id];
+  const imageUrl = player.image;
   const gradient = POS_GRADIENT[player.position] || "from-primary/20 via-primary/5 to-transparent";
 
   const formattedDob = player.dateOfBirth

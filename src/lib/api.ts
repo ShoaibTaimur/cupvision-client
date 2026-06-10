@@ -115,6 +115,7 @@ export interface Player {
   club?: string;
   nationality?: string;
   role?: string;
+  image?: string;
 }
 export interface Channel {
   _id: string;
