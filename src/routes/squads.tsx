@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { api, Player, Team } from "@/lib/api";
 import { SectionReveal } from "@/components/section-reveal";
-import { Skeleton, PlayerCardSkeleton, TeamListSkeleton } from "@/components/skeleton";
-import { Search, Shield, Shirt, User, ChevronDown, X } from "lucide-react";
+import { PlayerCardSkeleton, TeamListSkeleton } from "@/components/skeleton";
+import { Search, Shield, Shirt, User, ChevronDown, X, Calendar, Ruler, Building2 } from "lucide-react";
 import { createPortal } from "react-dom";
-import { useEffect } from "react";
+import playerImagesData from "@/data/player-images.json";
+
+const playerImages = playerImagesData as Record<string, string>;
 
 export const Route = createFileRoute("/squads")({
   head: () => ({
@@ -42,26 +44,40 @@ const POS_STYLES: Record<string, string> = {
   FWD: "bg-rose-500/15 text-rose-300 border-rose-500/30",
 };
 
+const POS_GRADIENT: Record<string, string> = {
+  GK: "from-yellow-500/20 via-yellow-500/5 to-transparent",
+  DEF: "from-sky-500/20 via-sky-500/5 to-transparent",
+  MID: "from-emerald-500/20 via-emerald-500/5 to-transparent",
+  FWD: "from-rose-500/20 via-rose-500/5 to-transparent",
+};
+
 function SquadsPage() {
   const [teamId, setTeamId] = useState<string | null>(null);
   const [pos, setPos] = useState<(typeof POS)[number]["id"]>("all");
   const [q, setQ] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
-    if (pickerOpen) {
+    if (pickerOpen || selectedPlayer) {
       const prev = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
         document.body.style.overflow = prev;
       };
     }
-  }, [pickerOpen]);
+  }, [pickerOpen, selectedPlayer]);
 
   const teamsQ = useQuery({
     queryKey: ["teams"],
     queryFn: () => api.get<Team[]>("/api/teams"),
   });
+
+  useEffect(() => {
+    if (teamsQ.data && teamsQ.data.length > 0 && !teamId) {
+      setTeamId(teamsQ.data[0]._id);
+    }
+  }, [teamsQ.data, teamId]);
 
   const playersQ = useQuery({
     queryKey: ["players", teamId],
@@ -229,7 +245,7 @@ function SquadsPage() {
               ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {grouped.map((p) => (
-                    <PlayerCard key={p._id} p={p} />
+                    <PlayerCard key={p._id} p={p} onClick={() => setSelectedPlayer(p)} />
                   ))}
                 </div>
               )}
@@ -274,6 +290,14 @@ function SquadsPage() {
               </div>
             </div>
           </div>,
+          document.body,
+        )}
+
+      {/* Player details modal */}
+      {selectedPlayer &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <PlayerModal player={selectedPlayer} onClose={() => setSelectedPlayer(null)} />,
           document.body,
         )}
     </SectionReveal>
@@ -337,23 +361,187 @@ function TeamList({
   );
 }
 
-function PlayerCard({ p }: { p: Player }) {
+function PlayerCard({ p, onClick }: { p: Player; onClick: () => void }) {
+  const imageUrl = playerImages[p._id];
+
   return (
-    <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3 hover:border-primary/40 transition-colors">
-      <div className="size-12 rounded-full bg-secondary flex items-center justify-center text-sm font-bold tabular-nums">
-        {p.jerseyNumber ?? <User className="size-5 text-muted-foreground" />}
+    <button
+      onClick={onClick}
+      className="w-full text-left bg-card border border-border rounded-lg p-4 flex items-center gap-3 hover:border-primary/50 hover:bg-secondary/40 transition-all duration-200 cursor-pointer group"
+    >
+      <div className="size-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-transparent group-hover:ring-primary/30 transition-all duration-200">
+        {imageUrl ? (
+          <img src={imageUrl} alt={p.name} className="w-full h-full object-cover" />
+        ) : p.jerseyNumber ? (
+          <span className="text-sm font-bold tabular-nums">{p.jerseyNumber}</span>
+        ) : (
+          <User className="size-5 text-muted-foreground" />
+        )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-semibold truncate">{p.name}</div>
+        <div className="font-semibold truncate">
+          {p.jerseyNumber ? `#${p.jerseyNumber} ` : ""}
+          {p.name}
+        </div>
         <div className="text-xs text-muted-foreground truncate">
           {p.club || p.nationality || "—"}
         </div>
       </div>
       <span
-        className={`text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border ${POS_STYLES[p.position]}`}
+        className={`text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border shrink-0 ${POS_STYLES[p.position]}`}
       >
         {p.position}
       </span>
+    </button>
+  );
+}
+
+function PlayerModal({ player, onClose }: { player: Player; onClose: () => void }) {
+  const imageUrl = playerImages[player._id];
+  const gradient = POS_GRADIENT[player.position] || "from-primary/20 via-primary/5 to-transparent";
+
+  const formattedDob = player.dateOfBirth
+    ? new Date(player.dateOfBirth).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  const age = player.dateOfBirth
+    ? Math.floor(
+        (Date.now() - new Date(player.dateOfBirth).getTime()) / (365.25 * 24 * 3600 * 1000),
+      )
+    : null;
+
+  const posLabel =
+    player.position === "GK"
+      ? "Goalkeeper"
+      : player.position === "DEF"
+        ? "Defender"
+        : player.position === "MID"
+          ? "Midfielder"
+          : "Forward";
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ animation: "cvFadeIn 0.15s ease-out" }}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={onClose} />
+
+      {/* Modal panel */}
+      <div
+        className="relative bg-card border border-border rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+        style={{ animation: "cvScaleIn 0.2s cubic-bezier(0.34,1.56,0.64,1)" }}
+      >
+        {/* Position-colored gradient header */}
+        <div
+          className={`absolute inset-x-0 top-0 h-44 bg-gradient-to-b ${gradient} pointer-events-none`}
+        />
+
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 inline-flex items-center justify-center size-8 rounded-full bg-background/60 hover:bg-secondary border border-border/50 backdrop-blur-sm transition-colors"
+          aria-label="Close"
+        >
+          <X className="size-4" />
+        </button>
+
+        {/* Avatar + name section */}
+        <div className="relative pt-8 pb-5 px-6 flex flex-col items-center text-center">
+          {/* Jersey number — top left */}
+          {player.jerseyNumber && (
+            <div className="absolute top-8 left-6 text-xs font-bold text-muted-foreground">
+              #{player.jerseyNumber}
+            </div>
+          )}
+
+          {/* Large avatar */}
+          <div className="size-32 rounded-full bg-secondary border-4 border-border flex items-center justify-center overflow-hidden shadow-xl mb-4">
+            {imageUrl ? (
+              <img src={imageUrl} alt={player.name} className="w-full h-full object-cover" />
+            ) : player.jerseyNumber ? (
+              <span className="text-4xl font-black tabular-nums text-foreground">
+                {player.jerseyNumber}
+              </span>
+            ) : (
+              <User className="size-14 text-muted-foreground" />
+            )}
+          </div>
+
+          {/* Position badge */}
+          <span
+            className={`text-[11px] uppercase tracking-widest font-bold px-3 py-1 rounded-full border mb-3 ${POS_STYLES[player.position]}`}
+          >
+            {posLabel}
+          </span>
+
+          <h2 className="text-xl font-black tracking-tight leading-tight">{player.name}</h2>
+          {player.nationality && (
+            <p className="text-sm text-muted-foreground mt-1">{player.nationality}</p>
+          )}
+        </div>
+
+        {/* Details */}
+        {(player.club || formattedDob || player.height) && (
+          <div className="px-6 pb-6 grid grid-cols-1 gap-2.5">
+            {player.club && (
+              <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+                <Building2 className="size-4 text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
+                    Club
+                  </div>
+                  <div className="text-sm font-semibold truncate">{player.club}</div>
+                </div>
+              </div>
+            )}
+            {formattedDob && (
+              <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+                <Calendar className="size-4 text-muted-foreground shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
+                    Date of Birth
+                  </div>
+                  <div className="text-sm font-semibold">
+                    {formattedDob}
+                    {age !== null && (
+                      <span className="text-muted-foreground font-normal ml-1.5">({age} yrs)</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {player.height && (
+              <div className="flex items-center gap-3 bg-secondary/50 rounded-xl px-4 py-3">
+                <Ruler className="size-4 text-muted-foreground shrink-0" />
+                <div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold mb-0.5">
+                    Height
+                  </div>
+                  <div className="text-sm font-semibold">{player.height} cm</div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes cvFadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes cvScaleIn { from { opacity: 0; transform: scale(0.92) } to { opacity: 1; transform: scale(1) } }
+      `}</style>
     </div>
   );
 }
