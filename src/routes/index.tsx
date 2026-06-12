@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { api, Channel, HomeSummary } from "@/lib/api";
+import { api, Channel, HomeSummary, Match } from "@/lib/api";
 import { MatchCard, LiveMatchCard } from "@/components/match-card";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
@@ -75,9 +75,29 @@ function Home() {
 
   const featuredChannel =
     (channels.data || []).find((item) => item.isFeatured) || channels.data?.[0];
-  const live = summary.data?.live || null;
+  const summaryLive = summary.data?.live || null;
   const upcoming = summary.data?.upcoming || null;
   const recent = summary.data?.recent || [];
+
+  // ISOLATED live poll — only runs when summary says there's a live match.
+  // This is the ONLY auto-refreshing request on the home page. It hits the
+  // dedicated /api/matches/live endpoint (the only one that triggers a
+  // provider sync) so scores update every 25s without re-fetching summary,
+  // stats, channels, or recent results.
+  const liveOverlay = useQuery({
+    queryKey: ["matches", "live"],
+    queryFn: () => api.get<Match[]>("/api/matches/live"),
+    enabled: Boolean(summaryLive),
+    refetchInterval: 25_000,
+    refetchIntervalInBackground: false,
+    staleTime: 10_000,
+  });
+
+  // Prefer the freshest live data from the dedicated endpoint; fall back to
+  // whatever the summary returned on first load.
+  const live =
+    (summaryLive && liveOverlay.data?.find((m) => m._id === summaryLive._id)) ||
+    summaryLive;
 
   const cd = useCountdown(upcoming ? `${upcoming.date}T${upcoming.time}:00` : undefined);
 
