@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { api, Channel, Match } from "@/lib/api";
 import { MatchCard, LiveMatchCard } from "@/components/match-card";
 import { SectionReveal } from "@/components/section-reveal";
@@ -51,6 +51,7 @@ function useCountdown(target?: string) {
 }
 
 function Home() {
+  const qc = useQueryClient();
   const matches = useQuery({
     queryKey: ["matches"],
     queryFn: () => api.get<Match[]>("/api/matches"),
@@ -77,6 +78,17 @@ function Home() {
     .slice(0, 6);
 
   const cd = useCountdown(upcoming ? `${upcoming.date}T${upcoming.time}:00` : undefined);
+
+  // When the upcoming countdown reaches zero, refetch so the server can
+  // auto-promote the match from "scheduled" to "live".
+  const promotedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!upcoming) return;
+    if (cd === null && promotedRef.current !== upcoming._id) {
+      promotedRef.current = upcoming._id;
+      qc.invalidateQueries({ queryKey: ["matches"] });
+    }
+  }, [cd, upcoming, qc]);
 
   return (
     <div>

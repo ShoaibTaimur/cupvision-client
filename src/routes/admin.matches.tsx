@@ -647,60 +647,117 @@ function ResultModal({
 }) {
   const [home, setHome] = useState<number>(match.homeScore ?? 0);
   const [away, setAway] = useState<number>(match.awayScore ?? 0);
-  const submit = useMutation({
+
+  const saveLive = useMutation({
     mutationFn: () =>
-      api.post(`/api/matches/${match._id}/result`, { homeScore: home, awayScore: away }, true),
+      api.post(
+        `/api/matches/${match._id}/live-score`,
+        { homeScore: home, awayScore: away, setLive: true },
+        true,
+      ),
     onSuccess: () => {
-      toast.success("Result saved");
+      toast.success("Live score updated");
       onSaved();
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const finish = useMutation({
+    mutationFn: () =>
+      api.post(`/api/matches/${match._id}/result`, { homeScore: home, awayScore: away }, true),
+    onSuccess: () => {
+      toast.success("Match finished");
+      onSaved();
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const busy = saveLive.isPending || finish.isPending;
+  const isFinal = match.status === "completed";
+
+  function Stepper({
+    label,
+    value,
+    onChange,
+  }: {
+    label: string;
+    value: number;
+    onChange: (n: number) => void;
+  }) {
+    return (
+      <div className="rounded-lg border border-border p-3">
+        <div className="text-xs text-muted-foreground text-center mb-2 truncate">{label}</div>
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => onChange(Math.max(0, value - 1))}
+            disabled={busy}
+          >
+            −
+          </Button>
+          <Input
+            type="number"
+            min={0}
+            value={value}
+            onChange={(e) => onChange(Math.max(0, Number(e.target.value) || 0))}
+            className="text-2xl text-center font-bold h-12"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => onChange(value + 1)}
+            disabled={busy}
+          >
+            +
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-card border border-border rounded-lg w-full max-w-md p-5"
+        className="bg-card border border-border w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="font-semibold mb-1">Submit result · Match #{match.matchNumber}</h3>
-        <p className="text-xs text-muted-foreground mb-4">
-          {match.homeTeam?.name} vs {match.awayTeam?.name}
+        <h3 className="font-semibold mb-1">
+          {isFinal ? "Edit result" : "Live score"} · Match #{match.matchNumber}
+        </h3>
+        <p className="text-xs text-muted-foreground mb-4 flex items-center gap-2">
+          <span>{match.homeTeam?.name} vs {match.awayTeam?.name}</span>
+          <StatusBadge status={match.status} />
         </p>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={match.homeTeam?.name || "Home"}>
-            <Input
-              type="number"
-              min={0}
-              value={home}
-              onChange={(e) => setHome(Number(e.target.value))}
-              className="text-lg text-center font-bold"
-            />
-          </Field>
-          <Field label={match.awayTeam?.name || "Away"}>
-            <Input
-              type="number"
-              min={0}
-              value={away}
-              onChange={(e) => setAway(Number(e.target.value))}
-              className="text-lg text-center font-bold"
-            />
-          </Field>
+          <Stepper label={match.homeTeam?.name || "Home"} value={home} onChange={setHome} />
+          <Stepper label={match.awayTeam?.name || "Away"} value={away} onChange={setAway} />
         </div>
-        <div className="flex justify-end gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
+        <p className="text-[11px] text-muted-foreground mt-3">
+          Tap + / − to update goals during the match. The match stays{" "}
+          <span className="font-medium">live</span> until you press{" "}
+          <span className="font-medium">Finish match</span>.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
-          <Button
-            onClick={() => submit.mutate()}
-            disabled={submit.isPending}
-          >
-            {submit.isPending ? "Saving..." : "Save result"}
+          {!isFinal && (
+            <Button
+              variant="secondary"
+              onClick={() => saveLive.mutate()}
+              disabled={busy}
+            >
+              {saveLive.isPending ? "Saving..." : "Save (keep live)"}
+            </Button>
+          )}
+          <Button onClick={() => finish.mutate()} disabled={busy}>
+            {finish.isPending ? "Saving..." : isFinal ? "Save result" : "Finish match"}
           </Button>
         </div>
       </div>
