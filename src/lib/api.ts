@@ -150,3 +150,8 @@ export interface Standing {
   goalDiff: number;
   points: number;
 }
+export interface HomeSummary {
+  live: Match | null;
+  upcoming: Match | null;
+  recent: Match[];
+}

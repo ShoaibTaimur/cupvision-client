@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { api, Channel, Match } from "@/lib/api";
+import { api, Channel, HomeSummary } from "@/lib/api";
 import { MatchCard, LiveMatchCard } from "@/components/match-card";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
@@ -52,47 +52,47 @@ function useCountdown(target?: string) {
 
 function Home() {
   const qc = useQueryClient();
-  const matches = useQuery({
-    queryKey: ["matches"],
-    queryFn: () => api.get<Match[]>("/api/matches"),
-    refetchInterval: (q) => {
-      const data = q.state.data as Match[] | undefined;
-      return data?.some((m) => m.status === "live") ? 20_000 : 60_000;
-    },
+  // Single lightweight summary call — no polling. Live scores are handled
+  // separately on /matches and /scoreboard so home stays cheap.
+  const summary = useQuery({
+    queryKey: ["home", "summary"],
+    queryFn: () => api.get<HomeSummary>("/api/matches/home-summary"),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
   const stats = useQuery({
     queryKey: ["stats", "tournament"],
     queryFn: () => api.get<any>("/api/stats/tournament"),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
   const channels = useQuery({
     queryKey: ["channels"],
     queryFn: () => api.get<Channel[]>("/api/channels"),
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 
-  const list = matches.data || [];
   const featuredChannel =
     (channels.data || []).find((item) => item.isFeatured) || channels.data?.[0];
-  const live = list.find((m) => m.status === "live");
-  const upcoming = list
-    .filter((m) => m.status === "scheduled")
-    .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`))[0];
-  const recent = list
-    .filter((m) => m.status === "completed")
-    .sort((a, b) => `${b.date}T${b.time}`.localeCompare(`${a.date}T${a.time}`))
-    .slice(0, 6);
+  const live = summary.data?.live || null;
+  const upcoming = summary.data?.upcoming || null;
+  const recent = summary.data?.recent || [];
 
   const cd = useCountdown(upcoming ? `${upcoming.date}T${upcoming.time}:00` : undefined);
 
-  // When the upcoming countdown reaches zero, refetch so the server can
-  // auto-promote the match from "scheduled" to "live".
+  // When the upcoming countdown reaches zero, refetch summary so the server
+  // can auto-promote the match from "scheduled" to "live".
   const promotedRef = useRef<string | null>(null);
   useEffect(() => {
     if (!upcoming) return;
     if (cd === null && promotedRef.current !== upcoming._id) {
       promotedRef.current = upcoming._id;
-      qc.invalidateQueries({ queryKey: ["matches"] });
+      qc.invalidateQueries({ queryKey: ["home", "summary"] });
     }
   }, [cd, upcoming, qc]);
+
+
 
   return (
     <div>
@@ -287,7 +287,7 @@ function Home() {
               Live snapshot
             </div>
             <div className="mt-5">
-              {matches.isLoading ? (
+              {summary.isLoading ? (
                 <Skeleton className="h-40 rounded-[1.5rem]" />
               ) : live ? (
                 <LiveMatchCard m={live} />
@@ -346,7 +346,7 @@ function Home() {
             View timeline
           </Link>
         </div>
-        {matches.isLoading ? (
+        {summary.isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <MatchCardSkeleton key={i} />

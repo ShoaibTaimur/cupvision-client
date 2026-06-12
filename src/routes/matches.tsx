@@ -40,17 +40,36 @@ function MatchesPage() {
   const [status, setStatus] = useState("all");
   const [group, setGroup] = useState("all");
 
+  // Full match list — fetched once, cached for a minute. No fast polling.
   const matches = useQuery({
     queryKey: ["matches", "all"],
     queryFn: () => api.get<Match[]>("/api/matches"),
-    refetchInterval: (q) => {
-      const data = q.state.data as Match[] | undefined;
-      return data?.some((m) => m.status === "live") ? 20_000 : 60_000;
-    },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });
 
+  // Dedicated live poll — the only thing that hits the live-score provider.
+  // Polls every 25s only while at least one live match exists.
+  const liveQ = useQuery({
+    queryKey: ["matches", "live"],
+    queryFn: () => api.get<Match[]>("/api/matches/live"),
+    refetchInterval: (q) => {
+      const data = q.state.data as Match[] | undefined;
+      const hasLive = data?.some((m) => m.status === "live" || m.status === "awaiting_result");
+      return hasLive ? 25_000 : 60_000;
+    },
+    refetchOnWindowFocus: false,
+  });
+
+  // Overlay live scores/minutes onto the cached match list.
+  const liveById = useMemo(() => {
+    const map = new Map<string, Match>();
+    (liveQ.data || []).forEach((m) => map.set(m._id, m));
+    return map;
+  }, [liveQ.data]);
+
   const filtered = useMemo(() => {
-    const list = matches.data || [];
+    const list = (matches.data || []).map((m) => liveById.get(m._id) ?? m);
     return list.filter((m) => {
       if (status !== "all" && m.status !== status) return false;
       if (group !== "all" && m.group !== group) return false;
@@ -71,7 +90,7 @@ function MatchesPage() {
       }
       return true;
     });
-  }, [matches.data, q, status, group]);
+  }, [matches.data, liveById, q, status, group]);
 
   return (
     <SectionReveal delay={0.08} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
