@@ -55,6 +55,10 @@ function Home() {
   const matches = useQuery({
     queryKey: ["matches"],
     queryFn: () => api.get<Match[]>("/api/matches"),
+    refetchInterval: (q) => {
+      const data = q.state.data as Match[] | undefined;
+      return data?.some((m) => m.status === "live") ? 20_000 : 60_000;
+    },
   });
   const stats = useQuery({
     queryKey: ["stats", "tournament"],

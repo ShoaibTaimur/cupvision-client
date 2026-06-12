@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { RefreshCw } from "lucide-react";
 
 export const Route = createFileRoute("/admin/matches")({
   head: () => ({ meta: [{ title: "Matches — CupVision Admin" }] }),
@@ -101,7 +103,7 @@ function MatchesAdmin() {
 
   return (
     <AdminShell>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold">Matches</h1>
           <p className="text-sm text-muted-foreground">Create, edit and submit results.</p>
@@ -117,6 +119,9 @@ function MatchesAdmin() {
           <Plus className="size-4" /> New match
         </Button>
       </div>
+
+      <LiveTrackingPanel />
+
 
       <div className="grid lg:grid-cols-[1fr_400px] gap-6">
         <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -764,3 +769,55 @@ function ResultModal({
     </div>
   );
 }
+
+interface LiveSettings {
+  liveScoreTrackingEnabled: boolean;
+}
+
+function LiveTrackingPanel() {
+  const qc = useQueryClient();
+  const settings = useQuery({
+    queryKey: ["app-settings"],
+    queryFn: () => api.get<LiveSettings>("/api/settings"),
+  });
+  const toggle = useMutation({
+    mutationFn: (enabled: boolean) =>
+      api.put<LiveSettings>("/api/settings", { liveScoreTrackingEnabled: enabled }),
+    onSuccess: (data) => {
+      qc.setQueryData(["app-settings"], data);
+      toast.success(
+        data.liveScoreTrackingEnabled
+          ? "Live score tracking ON"
+          : "Live score tracking OFF"
+      );
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const enabled = settings.data?.liveScoreTrackingEnabled ?? false;
+
+  return (
+    <div className="bg-card border border-border rounded-lg p-4 mb-6 flex items-center justify-between gap-3 flex-wrap">
+      <div className="flex items-start gap-3">
+        <RefreshCw
+          className={`size-5 mt-0.5 ${enabled ? "text-primary animate-spin" : "text-muted-foreground"}`}
+          style={enabled ? { animationDuration: "3s" } : undefined}
+        />
+        <div>
+          <div className="font-semibold text-sm">Live score auto-tracking</div>
+          <p className="text-xs text-muted-foreground max-w-md">
+            Polls TheSportsDB on every API hit (throttled to ~30s) and updates scores for
+            matches that have a <span className="font-mono">Live provider match ID</span> and
+            are live or kicking off within 6 hours. Toggle off if scores ever go wrong.
+          </p>
+        </div>
+      </div>
+      <Switch
+        checked={enabled}
+        disabled={settings.isLoading || toggle.isPending}
+        onCheckedChange={(v) => toggle.mutate(v)}
+      />
+    </div>
+  );
+}
+

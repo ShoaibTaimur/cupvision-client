@@ -43,7 +43,10 @@ function MatchesPage() {
   const matches = useQuery({
     queryKey: ["matches", "all"],
     queryFn: () => api.get<Match[]>("/api/matches"),
-    refetchInterval: 15_000,
+    refetchInterval: (q) => {
+      const data = q.state.data as Match[] | undefined;
+      return data?.some((m) => m.status === "live") ? 20_000 : 60_000;
+    },
   });
 
   const filtered = useMemo(() => {
