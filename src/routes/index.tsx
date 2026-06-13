@@ -79,25 +79,36 @@ function Home() {
   const upcoming = summary.data?.upcoming || null;
   const recent = summary.data?.recent || [];
 
-  // ISOLATED live poll — only runs when summary says there's a live match.
-  // This is the ONLY auto-refreshing request on the home page. It hits the
-  // dedicated /api/matches/live endpoint (the only one that triggers a
-  // provider sync) so scores update every 25s without re-fetching summary,
-  // stats, channels, or recent results.
+  // ISOLATED live poll — runs whenever there's either an active live match
+  // OR an upcoming match (so the provider can flip scheduled→live without
+  // a page reload). This is the ONLY auto-refreshing request on the home
+  // page; it hits /api/matches/live which is the single endpoint that
+  // triggers a provider sync.
   const liveOverlay = useQuery({
     queryKey: ["matches", "live"],
     queryFn: () => api.get<Match[]>("/api/matches/live"),
-    enabled: Boolean(summaryLive),
+    enabled: Boolean(summaryLive || upcoming),
     refetchInterval: 25_000,
     refetchIntervalInBackground: false,
     staleTime: 10_000,
   });
 
-  // Prefer the freshest live data from the dedicated endpoint; fall back to
-  // whatever the summary returned on first load.
-  const live =
-    (summaryLive && liveOverlay.data?.find((m) => m._id === summaryLive._id)) ||
-    summaryLive;
+  // Prefer the freshest live data from the dedicated endpoint. If the
+  // overlay has loaded and the previously-live match is no longer in the
+  // response, the match just ended — drop it immediately and refresh the
+  // summary so "recent results" and stats catch up.
+  const overlayLive = liveOverlay.data?.[0] || null;
+  const summaryLiveGone =
+    Boolean(summaryLive) && liveOverlay.isSuccess &&
+    !liveOverlay.data?.some((m) => m._id === summaryLive!._id);
+  const live = summaryLiveGone ? overlayLive : (overlayLive || summaryLive);
+
+  useEffect(() => {
+    if (summaryLiveGone) {
+      qc.invalidateQueries({ queryKey: ["home", "summary"] });
+      qc.invalidateQueries({ queryKey: ["stats", "tournament"] });
+    }
+  }, [summaryLiveGone, qc]);
 
   const cd = useCountdown(upcoming ? `${upcoming.date}T${upcoming.time}:00` : undefined);
 
@@ -109,6 +120,7 @@ function Home() {
     if (cd === null && promotedRef.current !== upcoming._id) {
       promotedRef.current = upcoming._id;
       qc.invalidateQueries({ queryKey: ["home", "summary"] });
+      qc.invalidateQueries({ queryKey: ["matches", "live"] });
     }
   }, [cd, upcoming, qc]);
 
