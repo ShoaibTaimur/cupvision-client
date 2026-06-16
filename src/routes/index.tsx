@@ -52,8 +52,7 @@ function useCountdown(target?: string) {
 
 function Home() {
   const qc = useQueryClient();
-  // Single lightweight summary call — no polling. Live scores are handled
-  // separately on /matches and /scoreboard so home stays cheap.
+  // Summary = upcoming + recent only. Live comes from dedicated endpoint.
   const summary = useQuery({
     queryKey: ["home", "summary"],
     queryFn: () => api.get<HomeSummary>("/api/matches/home-summary"),
@@ -75,40 +74,33 @@ function Home() {
 
   const featuredChannel =
     (channels.data || []).find((item) => item.isFeatured) || channels.data?.[0];
-  const summaryLive = summary.data?.live || null;
   const upcoming = summary.data?.upcoming || null;
   const recent = summary.data?.recent || [];
 
-  // ISOLATED live poll — runs whenever there's either an active live match
-  // OR an upcoming match (so the provider can flip scheduled→live without
-  // a page reload). This is the ONLY auto-refreshing request on the home
-  // page; it hits /api/matches/live which is the single endpoint that
-  // triggers a provider sync.
-  const liveOverlay = useQuery({
+  // Dedicated live poll. Single source for live state on home page.
+  const liveQuery = useQuery({
     queryKey: ["matches", "live"],
     queryFn: () => api.get<Match[]>("/api/matches/live"),
-    enabled: Boolean(summaryLive || upcoming),
     refetchInterval: 25_000,
     refetchIntervalInBackground: false,
     staleTime: 10_000,
   });
 
-  // Prefer the freshest live data from the dedicated endpoint. If the
-  // overlay has loaded and the previously-live match is no longer in the
-  // response, the match just ended — drop it immediately and refresh the
-  // summary so "recent results" and stats catch up.
-  const overlayLive = liveOverlay.data?.[0] || null;
-  const summaryLiveGone =
-    Boolean(summaryLive) && liveOverlay.isSuccess &&
-    !liveOverlay.data?.some((m) => m._id === summaryLive!._id);
-  const live = summaryLiveGone ? overlayLive : (overlayLive || summaryLive);
+  const liveMatches = liveQuery.data || [];
+  const live =
+    liveMatches.length > 1
+      ? liveMatches[liveMatches.length - 1]
+      : liveMatches[0] || null;
+  const liveCountRef = useRef(0);
 
   useEffect(() => {
-    if (summaryLiveGone) {
+    if (!liveQuery.isSuccess) return;
+    if (liveCountRef.current > 0 && liveMatches.length === 0) {
       qc.invalidateQueries({ queryKey: ["home", "summary"] });
       qc.invalidateQueries({ queryKey: ["stats", "tournament"] });
     }
-  }, [summaryLiveGone, qc]);
+    liveCountRef.current = liveMatches.length;
+  }, [liveMatches.length, liveQuery.isSuccess, qc]);
 
   const cd = useCountdown(upcoming ? `${upcoming.date}T${upcoming.time}:00` : undefined);
 
@@ -121,6 +113,7 @@ function Home() {
       promotedRef.current = upcoming._id;
       qc.invalidateQueries({ queryKey: ["home", "summary"] });
       qc.invalidateQueries({ queryKey: ["matches", "live"] });
+      qc.invalidateQueries({ queryKey: ["stats", "tournament"] });
     }
   }, [cd, upcoming, qc]);
 
@@ -168,7 +161,10 @@ function Home() {
 
             <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
               {[
-                { label: "Live now", value: live ? "01" : "00" },
+                {
+                  label: "Live now",
+                  value: String(liveMatches.length).padStart(2, "0"),
+                },
                 { label: "Channels", value: String(channels.data?.length ?? 0).padStart(2, "0") },
                 { label: "Upcoming", value: String(stats.data?.upcoming ?? 0).padStart(2, "0") },
               ].map((item) => (
@@ -264,7 +260,7 @@ function Home() {
                     Live status
                   </div>
                   <div className="mt-2 text-sm font-semibold text-white">
-                    {live ? "Match running now" : "No live fixture"}
+                    {liveMatches.length ? "Match running now" : "No live fixture"}
                   </div>
                   <div className="mt-1 text-sm leading-6 text-slate-300">
                     {live

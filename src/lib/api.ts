@@ -151,7 +151,6 @@ export interface Standing {
   points: number;
 }
 export interface HomeSummary {
-  live: Match | null;
   upcoming: Match | null;
   recent: Match[];
 }
