@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { api, Match } from "@/lib/api";
 import { MatchCard } from "@/components/match-card";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
 import { formatDate } from "@/lib/date";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/timeline")({
   head: () => ({
@@ -22,7 +23,15 @@ export const Route = createFileRoute("/timeline")({
   component: TimelinePage,
 });
 
+const FILTERS = [
+  { value: "upcoming", label: "Upcoming" },
+  { value: "finished", label: "Finished" },
+  { value: "all", label: "All" },
+];
+
 function TimelinePage() {
+  const [filter, setFilter] = useState("upcoming");
+
   const matches = useQuery({
     queryKey: ["matches"],
     queryFn: () => api.get<Match[]>("/api/matches"),
@@ -31,6 +40,11 @@ function TimelinePage() {
   const grouped = useMemo(() => {
     const list = (matches.data || [])
       .slice()
+      .filter((m) => {
+        if (filter === "upcoming") return m.status === "scheduled";
+        if (filter === "finished") return m.status === "completed";
+        return true;
+      })
       .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
     const map = new Map<string, Match[]>();
     for (const m of list) {
@@ -38,12 +52,27 @@ function TimelinePage() {
       map.get(m.date)!.push(m);
     }
     return Array.from(map.entries());
-  }, [matches.data]);
+  }, [matches.data, filter]);
 
   return (
     <SectionReveal delay={0.08} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <h1 className="text-3xl font-bold mb-2">Timeline</h1>
-      <p className="text-muted-foreground mb-8">Every match, day by day.</p>
+      <p className="text-muted-foreground mb-6">Every match, day by day.</p>
+
+      <div className="w-full sm:w-48 mb-6">
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {FILTERS.map((f) => (
+              <SelectItem key={f.value} value={f.value}>
+                {f.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {matches.isLoading ? (
         <div className="space-y-8">
@@ -59,7 +88,7 @@ function TimelinePage() {
           ))}
         </div>
       ) : grouped.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No matches yet.</p>
+        <p className="text-sm text-muted-foreground">No matches match this filter.</p>
       ) : (
         <div className="relative pl-6 border-l border-border space-y-8">
           {grouped.map(([date, items]) => (

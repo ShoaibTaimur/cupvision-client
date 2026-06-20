@@ -37,7 +37,7 @@ const GROUPS = ["all", ...["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"
 
 function MatchesPage() {
   const [q, setQ] = useState("");
-  const [status, setStatus] = useState("all");
+  const [status, setStatus] = useState("scheduled");
   const [group, setGroup] = useState("all");
 
   // Full match list — fetched once, cached for a minute. No fast polling.
