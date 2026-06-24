@@ -63,7 +63,10 @@ function WatchPage() {
         </div>
       </SectionReveal>
 
-      <SectionReveal delay={0.14} className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_360px]">
+      <SectionReveal
+        delay={0.14}
+        className="mt-8 grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.45fr)_360px]"
+      >
         <div className="space-y-4">
           {channels.isLoading ? (
             <PlayerSkeleton />
@@ -96,7 +99,7 @@ function WatchPage() {
           )}
         </div>
 
-        <aside className="rounded-lg border border-border bg-card p-4 sm:p-5">
+        <aside className="self-start rounded-lg border border-border bg-card p-4 sm:p-5">
           <div className="mb-4">
             <h2 className="text-lg font-semibold">Channel lineup</h2>
             <p className="text-sm text-muted-foreground">
@@ -104,13 +107,13 @@ function WatchPage() {
             </p>
           </div>
           {channels.isLoading ? (
-            <div className="space-y-3">
+            <div className="h-[28rem] space-y-3 overflow-y-auto pr-1">
               {Array.from({ length: 4 }).map((_, index) => (
                 <ChannelCardSkeleton key={index} />
               ))}
             </div>
           ) : list.length ? (
-            <div className="space-y-3">
+            <div className="h-[32rem] space-y-3 overflow-y-auto pr-1">
               {list.map((item) => {
                 const active = item._id === current?._id;
                 return (
