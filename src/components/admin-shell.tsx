@@ -68,8 +68,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row md:h-screen md:overflow-hidden">
-      <aside className="w-60 shrink-0 border-r border-border bg-card hidden md:flex flex-col">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <aside className="hidden w-60 shrink-0 self-start border-r border-border bg-card md:sticky md:top-0 md:flex md:min-h-screen md:flex-col">
         <Link to="/" className="flex items-center gap-2 px-5 py-4 border-b border-border">
           <div className="size-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground">
             <Trophy className="size-5" />
@@ -79,7 +79,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <div className="text-[10px] text-muted-foreground">Admin</div>
           </div>
         </Link>
-        <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-1 p-2">
           {NAV.map((n) => {
             const active = path === n.to;
             return (
@@ -200,7 +200,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           document.body,
         )}
 
-      <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-hidden p-6">{children}</main>
     </div>
   );
 }
