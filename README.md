@@ -2,7 +2,7 @@
 
 CupVision is full stack FIFA World Cup 2026 tracker.
 
-It ships with:
+It ships with:-
 
 - Public site for matches, scoreboard, timeline, authors, about
 - Public squads page for team rosters and player roles
