@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Trophy, Menu, X, ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { getToken } from "@/lib/api";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -23,6 +24,23 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [adminLoggedIn, setAdminLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const syncAdminState = () => setAdminLoggedIn(!!getToken());
+
+    syncAdminState();
+    window.addEventListener("focus", syncAdminState);
+    window.addEventListener("storage", syncAdminState);
+    return () => {
+      window.removeEventListener("focus", syncAdminState);
+      window.removeEventListener("storage", syncAdminState);
+    };
+  }, []);
+
+  const adminHref = adminLoggedIn ? "/admin/dashboard" : "/admin/login";
+  const adminLabel = adminLoggedIn ? "Dashboard" : "Admin";
+  const mobileAdminLabel = adminLoggedIn ? "Dashboard" : "Admin login";
 
   const closeMenu = () => {
     setClosing(true);
@@ -95,10 +113,10 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 lg:flex">
             <Link
-              to="/admin/login"
+              to={adminHref}
               className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white transition-all duration-300 hover:bg-white/10 ${scrolled ? "border border-white/10 bg-white/6 backdrop-blur-md" : "border border-transparent bg-transparent"}`}
             >
-              Admin
+              {adminLabel}
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -160,11 +178,11 @@ export function SiteHeader() {
               </nav>
               <div className="border-t border-border p-4">
                 <Link
-                  to="/admin/login"
+                  to={adminHref}
                   onClick={closeMenu}
                   className="flex items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-3 text-sm font-semibold transition-colors hover:bg-secondary"
                 >
-                  Admin login
+                  {mobileAdminLabel}
                   <ArrowRight className="size-4" />
                 </Link>
               </div>
@@ -177,6 +195,23 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
+  const [adminLoggedIn, setAdminLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const syncAdminState = () => setAdminLoggedIn(!!getToken());
+
+    syncAdminState();
+    window.addEventListener("focus", syncAdminState);
+    window.addEventListener("storage", syncAdminState);
+    return () => {
+      window.removeEventListener("focus", syncAdminState);
+      window.removeEventListener("storage", syncAdminState);
+    };
+  }, []);
+
+  const adminHref = adminLoggedIn ? "/admin/dashboard" : "/admin/login";
+  const adminLabel = adminLoggedIn ? "Dashboard" : "Admin";
+
   return (
     <footer className="mt-16 border-t border-border/80">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
@@ -202,8 +237,8 @@ export function SiteFooter() {
                 {item.label}
               </Link>
             ))}
-            <Link to="/admin/login" className="font-semibold text-primary">
-              Admin
+            <Link to={adminHref} className="font-semibold text-primary">
+              {adminLabel}
             </Link>
           </div>
         </div>
