@@ -165,35 +165,44 @@ function MatchCell({
   );
 }
 
-// Placeholder labels matching FIFA pairing (child N pairs sources 2N-1, 2N).
+// Official FIFA World Cup 2026 knockout pairings.
+// Source: FIFA 2026 match schedule. Pairings are NOT sequential.
+const PAIRINGS: Record<number, [number, number]> = {
+  // Round of 16 (sources are R32 winners)
+  89: [73, 75],
+  90: [74, 77],
+  91: [76, 78],
+  92: [79, 80],
+  93: [83, 84],
+  94: [81, 82],
+  95: [86, 88],
+  96: [85, 87],
+  // Quarter-finals (sources are R16 winners)
+  97: [89, 90],
+  98: [93, 94],
+  99: [91, 92],
+  100: [95, 96],
+  // Semi-finals (sources are QF winners)
+  101: [97, 98],
+  102: [99, 100],
+};
+
+function prefixFor(srcMatchNumber: number): string {
+  if (srcMatchNumber >= 73 && srcMatchNumber <= 88) return "R32";
+  if (srcMatchNumber >= 89 && srcMatchNumber <= 96) return "R16";
+  if (srcMatchNumber >= 97 && srcMatchNumber <= 100) return "QF";
+  return "";
+}
+
 function placeholdersFor(matchNumber: number): [string, string] {
-  if (matchNumber >= 73 && matchNumber <= 88) {
-    return ["TBD", "TBD"];
-  }
-  let prevStart = 73;
-  let childStart = 89;
-  let prefix = "R32";
-  if (matchNumber >= 89 && matchNumber <= 96) {
-    prevStart = 73;
-    childStart = 89;
-    prefix = "R32";
-  } else if (matchNumber >= 97 && matchNumber <= 100) {
-    prevStart = 89;
-    childStart = 97;
-    prefix = "R16";
-  } else if (matchNumber === 101 || matchNumber === 102) {
-    prevStart = 97;
-    childStart = 101;
-    prefix = "QF";
-  } else if (matchNumber === 104) {
-    return ["Winner SF1", "Winner SF2"];
-  } else if (matchNumber === 103) {
-    return ["Loser SF1", "Loser SF2"];
-  }
-  const offset = (matchNumber - childStart) * 2;
-  const a = prevStart + offset;
-  const b = prevStart + offset + 1;
-  return [`Winner ${prefix} M${a}`, `Winner ${prefix} M${b}`];
+  if (matchNumber >= 73 && matchNumber <= 88) return ["TBD", "TBD"];
+  if (matchNumber === 104) return ["Winner SF1", "Winner SF2"];
+  if (matchNumber === 103) return ["Loser SF1", "Loser SF2"];
+  const pair = PAIRINGS[matchNumber];
+  if (!pair) return ["TBD", "TBD"];
+  const [a, b] = pair;
+  const px = prefixFor(a);
+  return [`Winner ${px} M${a}`, `Winner ${px} M${b}`];
 }
 
 function BracketPage() {
