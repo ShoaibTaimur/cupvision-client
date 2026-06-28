@@ -85,7 +85,7 @@ function ImportPage() {
     <AdminShell>
       <h1 className="text-2xl font-bold mb-1">CSV Import</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        Bulk-upload matches. Teams are auto-created from unique names.
+        Bulk-upload matches for any stage (Group, R32, R16, QF, SF, 3rd Place, Final). Teams are auto-created from unique names — use placeholders like "Winner Group A" for unresolved knockout slots.
       </p>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6">
@@ -242,11 +242,11 @@ function ImportPage() {
               </TableRow>
               <TableRow>
                 <TableCell className="font-mono">stage</TableCell>
-                <TableCell>e.g. Group Stage</TableCell>
+                <TableCell>Group Stage | Round of 32 | Round of 16 | Quarter Final | Semi Final | Third Place | Final</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-mono">group</TableCell>
-                <TableCell>A–L or empty</TableCell>
+                <TableCell>A–L (required for Group Stage, leave empty for knockouts)</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-mono">status</TableCell>

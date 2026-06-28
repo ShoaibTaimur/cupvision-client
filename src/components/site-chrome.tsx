@@ -8,6 +8,7 @@ const NAV = [
   { to: "/", label: "Home" },
   { to: "/watch", label: "Watch" },
   { to: "/matches", label: "Matches" },
+  { to: "/bracket", label: "Bracket" },
   { to: "/scoreboard", label: "Scoreboard" },
   { to: "/squads", label: "Squads" },
   { to: "/timeline", label: "Timeline" },

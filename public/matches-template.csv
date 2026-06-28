@@ -1,6 +1,10 @@
 matchNumber,homeTeam,awayTeam,date,time,stadium,city,stage,group,status
 1,Mexico,Canada,2026-06-11,20:00,Estadio Azteca,Mexico City,Group Stage,A,scheduled
 2,USA,Wales,2026-06-12,18:00,SoFi Stadium,Los Angeles,Group Stage,B,scheduled
-3,Argentina,Brazil,2026-06-13,21:00,MetLife Stadium,New York,Group Stage,C,scheduled
-4,France,Germany,2026-06-14,15:00,AT&T Stadium,Dallas,Group Stage,D,scheduled
-5,Spain,Portugal,2026-06-15,18:00,Levi's Stadium,San Francisco,Group Stage,E,scheduled
+73,Winner Group A,Runner-up Group B,2026-06-28,17:00,Lumen Field,Seattle,Round of 32,,scheduled
+88,Winner Group L,Runner-up Group K,2026-07-03,20:00,Hard Rock Stadium,Miami,Round of 32,,scheduled
+89,TBD,TBD,2026-07-04,16:00,MetLife Stadium,New York,Round of 16,,scheduled
+97,TBD,TBD,2026-07-09,17:00,AT&T Stadium,Dallas,Quarter Final,,scheduled
+101,TBD,TBD,2026-07-14,15:00,MetLife Stadium,New York,Semi Final,,scheduled
+103,TBD,TBD,2026-07-18,16:00,Hard Rock Stadium,Miami,Third Place,,scheduled
+104,TBD,TBD,2026-07-19,15:00,MetLife Stadium,New York,Final,,scheduled

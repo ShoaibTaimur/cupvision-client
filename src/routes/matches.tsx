@@ -34,11 +34,22 @@ const STATUSES = [
   "postponed",
 ];
 const GROUPS = ["all", ...["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]];
+const STAGES = [
+  "all",
+  "Group Stage",
+  "Round of 32",
+  "Round of 16",
+  "Quarter Final",
+  "Semi Final",
+  "Third Place",
+  "Final",
+];
 
 function MatchesPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("scheduled");
   const [group, setGroup] = useState("all");
+  const [stage, setStage] = useState("all");
 
   // Full match list — fetched once, cached for a minute. No fast polling.
   const matches = useQuery({
@@ -72,7 +83,8 @@ function MatchesPage() {
     const list = (matches.data || []).map((m) => liveById.get(m._id) ?? m);
     return list.filter((m) => {
       if (status !== "all" && m.status !== status) return false;
-      if (group !== "all" && m.group !== group) return false;
+      if (stage !== "all" && m.stage !== stage) return false;
+      if (stage === "Group Stage" && group !== "all" && m.group !== group) return false;
       if (q) {
         const n = q.toLowerCase();
         const hay = [
@@ -90,7 +102,7 @@ function MatchesPage() {
       }
       return true;
     });
-  }, [matches.data, liveById, q, status, group]);
+  }, [matches.data, liveById, q, status, group, stage]);
 
   return (
     <SectionReveal delay={0.08} className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
@@ -122,19 +134,35 @@ function MatchesPage() {
           </Select>
         </div>
         <div className="w-full md:w-48">
-          <Select value={group} onValueChange={setGroup}>
+          <Select value={stage} onValueChange={setStage}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {GROUPS.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {g === "all" ? "All groups" : `Group ${g}`}
+              {STAGES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s === "all" ? "All stages" : s}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+        {(stage === "all" || stage === "Group Stage") && (
+          <div className="w-full md:w-48">
+            <Select value={group} onValueChange={setGroup}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {GROUPS.map((g) => (
+                  <SelectItem key={g} value={g}>
+                    {g === "all" ? "All groups" : `Group ${g}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {matches.isLoading ? (

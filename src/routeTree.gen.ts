@@ -14,6 +14,7 @@ import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as SquadsRouteImport } from './routes/squads'
 import { Route as ScoreboardRouteImport } from './routes/scoreboard'
 import { Route as MatchesRouteImport } from './routes/matches'
+import { Route as BracketRouteImport } from './routes/bracket'
 import { Route as AuthorsRouteImport } from './routes/authors'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -49,6 +50,11 @@ const ScoreboardRoute = ScoreboardRouteImport.update({
 const MatchesRoute = MatchesRouteImport.update({
   id: '/matches',
   path: '/matches',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BracketRoute = BracketRouteImport.update({
+  id: '/bracket',
+  path: '/bracket',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthorsRoute = AuthorsRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/authors': typeof AuthorsRoute
+  '/bracket': typeof BracketRoute
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
   '/squads': typeof SquadsRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/authors': typeof AuthorsRoute
+  '/bracket': typeof BracketRoute
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
   '/squads': typeof SquadsRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/authors': typeof AuthorsRoute
+  '/bracket': typeof BracketRoute
   '/matches': typeof MatchesRoute
   '/scoreboard': typeof ScoreboardRoute
   '/squads': typeof SquadsRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/authors'
+    | '/bracket'
     | '/matches'
     | '/scoreboard'
     | '/squads'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/authors'
+    | '/bracket'
     | '/matches'
     | '/scoreboard'
     | '/squads'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/authors'
+    | '/bracket'
     | '/matches'
     | '/scoreboard'
     | '/squads'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AuthorsRoute: typeof AuthorsRoute
+  BracketRoute: typeof BracketRoute
   MatchesRoute: typeof MatchesRoute
   ScoreboardRoute: typeof ScoreboardRoute
   SquadsRoute: typeof SquadsRoute
@@ -273,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/matches'
       fullPath: '/matches'
       preLoaderRoute: typeof MatchesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bracket': {
+      id: '/bracket'
+      path: '/bracket'
+      fullPath: '/bracket'
+      preLoaderRoute: typeof BracketRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/authors': {
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AuthorsRoute: AuthorsRoute,
+  BracketRoute: BracketRoute,
   MatchesRoute: MatchesRoute,
   ScoreboardRoute: ScoreboardRoute,
   SquadsRoute: SquadsRoute,
