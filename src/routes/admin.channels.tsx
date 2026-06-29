@@ -192,7 +192,7 @@ function ChannelsAdmin() {
             e.preventDefault();
             save.mutate();
           }}
-          className="space-y-3 rounded-lg border border-border bg-card p-5"
+          className="space-y-3 rounded-lg border border-border bg-card p-5 h-fit lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto"
         >
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">{editing ? "Edit channel" : "New channel"}</h2>

@@ -15,6 +15,7 @@ import {
   Home,
   Radio,
   Shirt,
+  Navigation,
 } from "lucide-react";
 
 const NAV = [
@@ -23,6 +24,7 @@ const NAV = [
   { to: "/admin/channels", label: "Channels", icon: Radio },
   { to: "/admin/teams", label: "Teams", icon: Users },
   { to: "/admin/authors", label: "Authors", icon: UserCog },
+  { to: "/admin/nav", label: "Navigation", icon: Navigation },
   { to: "/admin/import", label: "Import Matches", icon: Upload },
   { to: "/admin/players-import", label: "Import Players", icon: Shirt },
 ];

@@ -134,7 +134,7 @@ function AuthorsAdmin() {
             e.preventDefault();
             save.mutate();
           }}
-          className="bg-card border border-border rounded-lg p-5 space-y-3 h-fit"
+          className="bg-card border border-border rounded-lg p-5 space-y-3 h-fit lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto"
         >
           <h2 className="font-semibold">{editing ? "Edit author" : "New author"}</h2>
           <Field label="Name *">

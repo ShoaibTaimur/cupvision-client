@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Trophy, Menu, X, ArrowRight } from "lucide-react";
+import { Trophy, Menu, X, ArrowRight, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { getToken } from "@/lib/api";
+import { api } from "@/lib/api";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -21,11 +24,32 @@ const activeCls =
 const idleCls =
   "rounded-full px-4 py-2 text-sm font-medium text-white/72 transition-colors hover:bg-white/10 hover:text-white";
 
+interface SiteSettings {
+  disabledNav?: Record<string, { message: string }>;
+}
+
+function useSiteSettings() {
+  return useQuery({
+    queryKey: ["site-settings"],
+    queryFn: () => api.get<SiteSettings>("/api/settings"),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+function handleDisabledClick(e: React.MouseEvent, message: string) {
+  e.preventDefault();
+  e.stopPropagation();
+  toast(message || "This section is temporarily unavailable.", { icon: "🔒" });
+}
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [adminLoggedIn, setAdminLoggedIn] = useState(false);
+  const settingsQ = useSiteSettings();
+  const disabled = settingsQ.data?.disabledNav || {};
 
   useEffect(() => {
     const syncAdminState = () => setAdminLoggedIn(!!getToken());
@@ -98,17 +122,34 @@ export function SiteHeader() {
         <nav
           className={`hidden items-center gap-1 rounded-full p-1.5 transition-all duration-300 lg:flex ${scrolled ? "border border-white/10 bg-white/6 backdrop-blur-md" : "border border-transparent bg-transparent"}`}
         >
-          {NAV.map((n) => (
-            <Link
-              key={n.to}
-              to={n.to}
-              className={idleCls}
-              activeProps={{ className: activeCls }}
-              activeOptions={{ exact: n.to === "/" }}
-            >
-              {n.label}
-            </Link>
-          ))}
+          {NAV.map((n) => {
+            const d = disabled[n.to];
+            if (d) {
+              return (
+                <button
+                  key={n.to}
+                  type="button"
+                  onClick={(e) => handleDisabledClick(e, d.message)}
+                  className="group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium text-white/40 transition-colors hover:bg-white/5 hover:text-white/70"
+                  title={d.message}
+                >
+                  <Lock className="size-3.5 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110 motion-safe:animate-pulse" />
+                  <span className="line-through decoration-white/30">{n.label}</span>
+                </button>
+              );
+            }
+            return (
+              <Link
+                key={n.to}
+                to={n.to}
+                className={idleCls}
+                activeProps={{ className: activeCls }}
+                activeOptions={{ exact: n.to === "/" }}
+              >
+                {n.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -160,22 +201,45 @@ export function SiteHeader() {
                 </button>
               </div>
               <nav className="flex-1 space-y-1 p-3">
-                {NAV.map((n) => (
-                  <Link
-                    key={n.to}
-                    to={n.to}
-                    onClick={closeMenu}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                    activeProps={{
-                      className:
-                        "flex items-center justify-between rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground",
-                    }}
-                    activeOptions={{ exact: n.to === "/" }}
-                  >
-                    <span>{n.label}</span>
-                    <span className="text-xs opacity-70">→</span>
-                  </Link>
-                ))}
+                {NAV.map((n) => {
+                  const d = disabled[n.to];
+                  if (d) {
+                    return (
+                      <button
+                        key={n.to}
+                        type="button"
+                        onClick={(e) => {
+                          handleDisabledClick(e, d.message);
+                        }}
+                        className="group flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm text-muted-foreground/60 transition-colors hover:bg-secondary"
+                      >
+                        <span className="flex items-center gap-2">
+                          <Lock className="size-3.5 transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110 motion-safe:animate-pulse" />
+                          <span className="line-through decoration-muted-foreground/50">
+                            {n.label}
+                          </span>
+                        </span>
+                        <span className="text-xs opacity-70">🔒</span>
+                      </button>
+                    );
+                  }
+                  return (
+                    <Link
+                      key={n.to}
+                      to={n.to}
+                      onClick={closeMenu}
+                      className="flex items-center justify-between rounded-xl px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      activeProps={{
+                        className:
+                          "flex items-center justify-between rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground",
+                      }}
+                      activeOptions={{ exact: n.to === "/" }}
+                    >
+                      <span>{n.label}</span>
+                      <span className="text-xs opacity-70">→</span>
+                    </Link>
+                  );
+                })}
               </nav>
               <div className="border-t border-border p-4">
                 <Link

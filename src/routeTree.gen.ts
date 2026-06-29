@@ -20,6 +20,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminTeamsRouteImport } from './routes/admin.teams'
 import { Route as AdminPlayersImportRouteImport } from './routes/admin.players-import'
+import { Route as AdminNavRouteImport } from './routes/admin.nav'
 import { Route as AdminMatchesRouteImport } from './routes/admin.matches'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
@@ -82,6 +83,11 @@ const AdminPlayersImportRoute = AdminPlayersImportRouteImport.update({
   path: '/admin/players-import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminNavRoute = AdminNavRouteImport.update({
+  id: '/admin/nav',
+  path: '/admin/nav',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminMatchesRoute = AdminMatchesRouteImport.update({
   id: '/admin/matches',
   path: '/admin/matches',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/matches': typeof AdminMatchesRoute
+  '/admin/nav': typeof AdminNavRoute
   '/admin/players-import': typeof AdminPlayersImportRoute
   '/admin/teams': typeof AdminTeamsRoute
 }
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/matches': typeof AdminMatchesRoute
+  '/admin/nav': typeof AdminNavRoute
   '/admin/players-import': typeof AdminPlayersImportRoute
   '/admin/teams': typeof AdminTeamsRoute
 }
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/admin/import': typeof AdminImportRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/matches': typeof AdminMatchesRoute
+  '/admin/nav': typeof AdminNavRoute
   '/admin/players-import': typeof AdminPlayersImportRoute
   '/admin/teams': typeof AdminTeamsRoute
 }
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/login'
     | '/admin/matches'
+    | '/admin/nav'
     | '/admin/players-import'
     | '/admin/teams'
   fileRoutesByTo: FileRoutesByTo
@@ -208,6 +218,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/login'
     | '/admin/matches'
+    | '/admin/nav'
     | '/admin/players-import'
     | '/admin/teams'
   id:
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/import'
     | '/admin/login'
     | '/admin/matches'
+    | '/admin/nav'
     | '/admin/players-import'
     | '/admin/teams'
   fileRoutesById: FileRoutesById
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   AdminImportRoute: typeof AdminImportRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMatchesRoute: typeof AdminMatchesRoute
+  AdminNavRoute: typeof AdminNavRoute
   AdminPlayersImportRoute: typeof AdminPlayersImportRoute
   AdminTeamsRoute: typeof AdminTeamsRoute
 }
@@ -330,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPlayersImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/nav': {
+      id: '/admin/nav'
+      path: '/admin/nav'
+      fullPath: '/admin/nav'
+      preLoaderRoute: typeof AdminNavRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/matches': {
       id: '/admin/matches'
       path: '/admin/matches'
@@ -391,19 +411,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminImportRoute: AdminImportRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMatchesRoute: AdminMatchesRoute,
+  AdminNavRoute: AdminNavRoute,
   AdminPlayersImportRoute: AdminPlayersImportRoute,
   AdminTeamsRoute: AdminTeamsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
