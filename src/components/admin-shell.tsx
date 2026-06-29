@@ -202,7 +202,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           document.body,
         )}
 
-      <main className="min-w-0 flex-1 overflow-x-hidden p-6">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-clip p-6">{children}</main>
     </div>
   );
 }

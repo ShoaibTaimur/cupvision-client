@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteFooter, SiteHeader } from "../components/site-chrome";
 import { ScrollTopButton } from "../components/scroll-top-button";
+import { DisabledRouteGuard } from "../components/disabled-route-guard";
 import { Toaster } from "sonner";
 
 // Inject Vercel Analytics
@@ -135,7 +136,7 @@ function RootComponent() {
       <div className="min-h-screen flex flex-col">
         {!isAdmin && <SiteHeader />}
         <main className={isAdmin ? "flex-1" : isHome ? "flex-1" : "flex-1 pt-20 sm:pt-24"}>
-          <Outlet />
+          {isAdmin ? <Outlet /> : <DisabledRouteGuard><Outlet /></DisabledRouteGuard>}
         </main>
         {!isAdmin && <SiteFooter />}
         {!isAdmin && <ScrollTopButton />}
