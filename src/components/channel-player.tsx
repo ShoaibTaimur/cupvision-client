@@ -9,10 +9,19 @@ import {
   Volume1,
   Maximize,
   Minimize,
+  PictureInPicture2,
   Radio,
   AlertTriangle,
   Loader2,
 } from "lucide-react";
+
+const PLAYER_PREFS_KEY = "cupvision:player-prefs";
+
+type VideoWithPresentationMode = HTMLVideoElement & {
+  webkitPresentationMode?: "inline" | "picture-in-picture" | "fullscreen";
+  webkitSupportsPresentationMode?: (mode: "inline" | "picture-in-picture" | "fullscreen") => boolean;
+  webkitSetPresentationMode?: (mode: "inline" | "picture-in-picture" | "fullscreen") => void;
+};
 
 function canUseNativeHls(video: HTMLVideoElement) {
   return video.canPlayType("application/vnd.apple.mpegurl") !== "";
@@ -30,10 +39,39 @@ export function ChannelPlayer({ channel }: { channel: Channel }) {
   const [muted, setMuted] = useState(true);
   const [volume, setVolume] = useState(0.8);
   const [fullscreen, setFullscreen] = useState(false);
+  const [pip, setPip] = useState(false);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState("");
   const [showControls, setShowControls] = useState(true);
   const [buffering, setBuffering] = useState(false);
+
+  /* ── Restore saved prefs ───────────────────────────────────────────── */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(PLAYER_PREFS_KEY);
+      if (!raw) return;
+      const prefs = JSON.parse(raw) as { muted?: boolean; volume?: number };
+      if (typeof prefs.muted === "boolean") setMuted(prefs.muted);
+      if (typeof prefs.volume === "number" && Number.isFinite(prefs.volume)) {
+        setVolume(Math.min(1, Math.max(0, prefs.volume)));
+      }
+    } catch {
+      // Ignore malformed saved prefs.
+    }
+  }, []);
+
+  /* ── Persist prefs ─────────────────────────────────────────────────── */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      PLAYER_PREFS_KEY,
+      JSON.stringify({
+        muted,
+        volume,
+      }),
+    );
+  }, [muted, volume]);
 
   /* ── Attach HLS source ──────────────────────────────────────────────────
    *  KEY RULE: This effect ONLY sets state. It never calls video.play().
@@ -171,6 +209,29 @@ export function ChannelPlayer({ channel }: { channel: Channel }) {
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
+  /* ── PiP listener ─────────────────────────────────────────────────── */
+  useEffect(() => {
+    const video = videoRef.current as VideoWithPresentationMode | null;
+    if (!video) return;
+
+    const syncPip = () => {
+      const standardPip = document.pictureInPictureElement === video;
+      const webkitPip = video.webkitPresentationMode === "picture-in-picture";
+      setPip(standardPip || webkitPip);
+    };
+
+    syncPip();
+    video.addEventListener("enterpictureinpicture", syncPip);
+    video.addEventListener("leavepictureinpicture", syncPip);
+    video.addEventListener("webkitpresentationmodechanged", syncPip as EventListener);
+
+    return () => {
+      video.removeEventListener("enterpictureinpicture", syncPip);
+      video.removeEventListener("leavepictureinpicture", syncPip);
+      video.removeEventListener("webkitpresentationmodechanged", syncPip as EventListener);
+    };
+  }, [channel._id]);
+
   /* ── Auto-hide controls ───────────────────────────────────────────── */
   const scheduleHide = useCallback(() => {
     if (hideTimeout.current) clearTimeout(hideTimeout.current);
@@ -189,6 +250,68 @@ export function ChannelPlayer({ channel }: { channel: Channel }) {
     scheduleHide();
   }, [scheduleHide]);
 
+  /* ── Keyboard shortcuts ────────────────────────────────────────────── */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const typing =
+        target?.isContentEditable || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+      if (typing) return;
+
+      if (event.key === " " || event.key === "k") {
+        event.preventDefault();
+        setPlaying((prev) => !prev);
+        handleInteraction();
+        return;
+      }
+
+      if (event.key === "m") {
+        event.preventDefault();
+        toggleMute();
+        handleInteraction();
+        return;
+      }
+
+      if (event.key === "f") {
+        event.preventDefault();
+        void toggleFullscreen();
+        handleInteraction();
+        return;
+      }
+
+      if (event.key === "p") {
+        event.preventDefault();
+        void togglePip();
+        handleInteraction();
+        return;
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setMuted(false);
+        setVolume((prev) => Math.min(1, Number((prev + 0.05).toFixed(2))));
+        handleInteraction();
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setVolume((prev) => {
+          const next = Math.max(0, Number((prev - 0.05).toFixed(2)));
+          setMuted(next === 0);
+          return next;
+        });
+        handleInteraction();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleInteraction, muted, volume]);
+
   /* ── Fullscreen toggle ────────────────────────────────────────────── */
   const toggleFullscreen = async () => {
     const el = containerRef.current;
@@ -197,6 +320,44 @@ export function ChannelPlayer({ channel }: { channel: Channel }) {
       await el.requestFullscreen().catch(() => {});
     } else {
       await document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  const canUsePip = () => {
+    const video = videoRef.current as VideoWithPresentationMode | null;
+    if (!video) return false;
+    if (typeof document !== "undefined" && "pictureInPictureEnabled" in document) {
+      if ((document as Document & { pictureInPictureEnabled?: boolean }).pictureInPictureEnabled) {
+        return true;
+      }
+    }
+    return !!video.webkitSupportsPresentationMode?.("picture-in-picture");
+  };
+
+  const togglePip = async () => {
+    const video = videoRef.current as (HTMLVideoElement & {
+      requestPictureInPicture?: () => Promise<PictureInPictureWindow>;
+    } & VideoWithPresentationMode) | null;
+    if (!video) return;
+
+    try {
+      if (document.pictureInPictureElement === video) {
+        await document.exitPictureInPicture?.();
+        return;
+      }
+      if (video.webkitPresentationMode === "picture-in-picture") {
+        video.webkitSetPresentationMode?.("inline");
+        return;
+      }
+      if (video.requestPictureInPicture) {
+        await video.requestPictureInPicture();
+        return;
+      }
+      if (video.webkitSupportsPresentationMode?.("picture-in-picture")) {
+        video.webkitSetPresentationMode?.("picture-in-picture");
+      }
+    } catch {
+      // Ignore PiP API failures from browser/user gesture restrictions.
     }
   };
 
@@ -323,11 +484,21 @@ export function ChannelPlayer({ channel }: { channel: Channel }) {
               {/* Muted hint */}
               {muted && (
                 <span className="hidden sm:inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-yellow-300">
-                  Muted — click 🔊 for sound
+                  Muted - click sound btn
                 </span>
               )}
 
               <div className="flex-1" />
+
+              {canUsePip() && (
+                <button
+                  onClick={togglePip}
+                  className="flex size-9 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/30 active:scale-95"
+                  aria-label={pip ? "Exit picture in picture" : "Enter picture in picture"}
+                >
+                  <PictureInPicture2 className="size-4" />
+                </button>
+              )}
 
               {/* Fullscreen */}
               <button
