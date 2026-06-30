@@ -12,6 +12,16 @@ import { formatMatchDateTime, getFormDate, getFormTime } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -57,6 +67,7 @@ function MatchesAdmin() {
   const [form, setForm] = useState(empty);
   const [resultFor, setResultFor] = useState<Match | null>(null);
   const [actionsFor, setActionsFor] = useState<Match | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
   const [formModalOpen, setFormModalOpen] = useState(false);
 
   const save = useMutation({
@@ -188,7 +199,10 @@ function MatchesAdmin() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => confirm("Delete match?") && del.mutate(m._id)}
+                        onClick={() => setDeleteConfirm({
+                          id: m._id,
+                          title: `Match #${m.matchNumber} (${m.homeTeam?.name || "TBD"} vs ${m.awayTeam?.name || "TBD"})`
+                        })}
                         className="text-destructive hover:bg-destructive/20 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
@@ -233,10 +247,11 @@ function MatchesAdmin() {
             setActionsFor(null);
           }}
           onDelete={() => {
-            if (confirm("Delete match?")) {
-              del.mutate(actionsFor._id);
-              setActionsFor(null);
-            }
+            setDeleteConfirm({
+              id: actionsFor._id,
+              title: `Match #${actionsFor.matchNumber} (${actionsFor.homeTeam?.name || "TBD"} vs ${actionsFor.awayTeam?.name || "TBD"})`
+            });
+            setActionsFor(null);
           }}
         />
       )}
@@ -265,6 +280,7 @@ function MatchesAdmin() {
                   required
                   value={form.matchNumber}
                   onChange={(e) => setForm({ ...form, matchNumber: Number(e.target.value) })}
+                  placeholder="e.g. 1"
                 />
               </Field>
               <Field label="Status *">
@@ -289,7 +305,7 @@ function MatchesAdmin() {
               <Input
                 value={form.externalMatchId}
                 onChange={(e) => setForm({ ...form, externalMatchId: e.target.value })}
-                placeholder="Provider fixture or match id"
+                placeholder="e.g. 400259821"
               />
             </Field>
             <Field label="Home team *">
@@ -351,6 +367,7 @@ function MatchesAdmin() {
                 required
                 value={form.stadium}
                 onChange={(e) => setForm({ ...form, stadium: e.target.value })}
+                placeholder="e.g. Lusail Stadium"
               />
             </Field>
             <div className="grid grid-cols-2 gap-3">
@@ -359,6 +376,7 @@ function MatchesAdmin() {
                   required
                   value={form.city}
                   onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  placeholder="e.g. Lusail"
                 />
               </Field>
               <Field label="Group (A-L)">
@@ -366,6 +384,7 @@ function MatchesAdmin() {
                   value={form.group}
                   maxLength={1}
                   onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
+                  placeholder="e.g. A"
                 />
               </Field>
             </div>
@@ -374,6 +393,7 @@ function MatchesAdmin() {
                 required
                 value={form.stage}
                 onChange={(e) => setForm({ ...form, stage: e.target.value })}
+                placeholder="e.g. Group Stage"
               />
             </Field>
             <Field label="Notes">
@@ -381,6 +401,7 @@ function MatchesAdmin() {
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={2}
+                placeholder="e.g. Match delayed due to weather"
               />
             </Field>
             <Button
@@ -392,6 +413,32 @@ function MatchesAdmin() {
           </form>
         </FormModal>
       )}
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the match{" "}
+              <strong className="text-foreground">"{deleteConfirm?.title}"</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={() => {
+                if (deleteConfirm) {
+                  del.mutate(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminShell>
   );
 }

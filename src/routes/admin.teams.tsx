@@ -9,6 +9,16 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/admin/teams")({
   head: () => ({ meta: [{ title: "Teams — CupVision Admin" }] }),
@@ -23,6 +33,7 @@ function TeamsAdmin() {
   const [editing, setEditing] = useState<Team | null>(null);
   const [form, setForm] = useState<typeof empty>(empty);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -99,7 +110,7 @@ function TeamsAdmin() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => confirm(`Delete ${t.name}?`) && del.mutate(t._id)}
+                      onClick={() => setDeleteConfirm({ id: t._id, title: t.name })}
                       className="text-destructive hover:bg-destructive/20 hover:text-destructive"
                     >
                       <Trash2 className="size-4" />
@@ -140,6 +151,7 @@ function TeamsAdmin() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. Argentina"
               />
             </Field>
             <Field label="Group (A-L)">
@@ -147,12 +159,14 @@ function TeamsAdmin() {
                 value={form.group}
                 onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
                 maxLength={1}
+                placeholder="e.g. A"
               />
             </Field>
             <Field label="Flag URL">
               <Input
                 value={form.flag}
                 onChange={(e) => setForm({ ...form, flag: e.target.value })}
+                placeholder="e.g. https://example.com/flags/ar.png"
               />
             </Field>
             <Button
@@ -164,6 +178,32 @@ function TeamsAdmin() {
           </form>
         </FormModal>
       )}
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the team{" "}
+              <strong className="text-foreground">"{deleteConfirm?.title}"</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={() => {
+                if (deleteConfirm) {
+                  del.mutate(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminShell>
   );
 }

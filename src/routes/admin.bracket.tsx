@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, RefreshCcw, Stethoscope, Trash2 } from "lucide-react";
-import { getFormDate, getFormTime } from "@/lib/date";
+import { Plus, RefreshCcw, Search, Stethoscope, Trash2, Pencil } from "lucide-react";
+import { formatMatchDateTime, getFormDate, getFormTime } from "@/lib/date";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/admin/bracket")({
-  head: () => ({ meta: [{ title: "Bracket Config — CupVision Admin" }] }),
+  head: () => ({ meta: [{ title: "Bracket — CupVision Admin" }] }),
   component: BracketAdmin,
 });
 
@@ -42,6 +43,7 @@ function BracketAdmin() {
     [configs.data, selected],
   );
   const [form, setForm] = useState<MatchConfig | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const list = useMemo(() => {
     const rows = configs.data || [];
@@ -59,6 +61,9 @@ function BracketAdmin() {
       qc.invalidateQueries({ queryKey: ["match-configs"] });
       qc.invalidateQueries({ queryKey: ["admin-matches"] });
       qc.invalidateQueries({ queryKey: ["bracket"] });
+      setIsModalOpen(false);
+      setSelected(null);
+      setForm(null);
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -118,24 +123,36 @@ function BracketAdmin() {
     next.date = getFormDate(next.date);
     next.time = getFormTime(config.date, next.time);
     setForm(next);
+    setIsModalOpen(true);
   };
 
   return (
     <AdminShell>
-      <div className="mb-6 flex items-start justify-between gap-4">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Bracket Config</h1>
+          <h1 className="text-2xl font-bold">Bracket</h1>
           <p className="text-sm text-muted-foreground">DB source truth by match number.</p>
         </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={() => healScores.mutate()} disabled={healScores.isPending}>
-            <Stethoscope className={`mr-2 size-4 ${healScores.isPending ? "animate-spin" : ""}`} />
-            Heal Scores
-          </Button>
-          <Button type="button" variant="outline" onClick={() => syncFifa.mutate()} disabled={syncFifa.isPending}>
-            <RefreshCcw className={`mr-2 size-4 ${syncFifa.isPending ? "animate-spin" : ""}`} />
-            Sync FIFA
-          </Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground z-10" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search match #..."
+              className="pl-10 h-10 rounded-xl bg-background/50 border-border"
+            />
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button type="button" variant="outline" onClick={() => healScores.mutate()} disabled={healScores.isPending}>
+              <Stethoscope className={`mr-2 size-4 ${healScores.isPending ? "animate-spin" : ""}`} />
+              Heal
+            </Button>
+            <Button type="button" variant="outline" onClick={() => syncFifa.mutate()} disabled={syncFifa.isPending}>
+              <RefreshCcw className={`mr-2 size-4 ${syncFifa.isPending ? "animate-spin" : ""}`} />
+              Sync FIFA
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -158,146 +175,212 @@ function BracketAdmin() {
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <div className="rounded-lg border border-border bg-card p-4">
-          <Field label="Search match #">
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="73" />
-          </Field>
-          <div className="mt-4 max-h-[70vh] space-y-2 overflow-y-auto">
-            {configs.isLoading ? (
-              <Skeleton className="h-48" />
-            ) : (
-              list.map((row) => (
-                <button
-                  key={row.matchNumber}
-                  type="button"
-                  onClick={() => startEdit(row)}
-                  className={`w-full rounded-lg border px-3 py-2 text-left transition-colors ${
-                    selected === row.matchNumber
-                      ? "border-primary bg-primary/10"
-                      : "border-border bg-background hover:bg-secondary"
-                  }`}
-                >
-                  <div className="text-sm font-semibold">Match {row.matchNumber}</div>
-                  <div className="text-xs text-muted-foreground">{row.stage}</div>
-                </button>
-              ))
-            )}
-          </div>
+      {configs.isLoading ? (
+        <Skeleton className="h-64" />
+      ) : (
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-20 text-center">Match #</TableHead>
+                <TableHead>Stage</TableHead>
+                <TableHead>Group</TableHead>
+                <TableHead>Seeds (Home vs Away)</TableHead>
+                <TableHead>Venue</TableHead>
+                <TableHead>Date / Time</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {list.map((row) => (
+                <TableRow key={row.matchNumber}>
+                  <TableCell className="font-semibold text-center tabular-nums text-primary bg-primary/5">
+                    M{row.matchNumber}
+                  </TableCell>
+                  <TableCell className="font-medium">{row.stage}</TableCell>
+                  <TableCell className="text-muted-foreground">{row.group || "—"}</TableCell>
+                  <TableCell className="text-xs">
+                    <span className="font-medium">
+                      {row.homeSeed?.label || row.homeSeed?.kind || "TBD"}
+                    </span>
+                    <span className="mx-2 text-muted-foreground/40">vs</span>
+                    <span className="font-medium">
+                      {row.awaySeed?.label || row.awaySeed?.kind || "TBD"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {row.stadium ? `${row.stadium}, ${row.city}` : "—"}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
+                    {formatMatchDateTime(row.date, row.time)}
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`text-[10px] uppercase font-bold tracking-wider ${row.isActive ? "text-emerald-400" : "text-muted-foreground"}`}
+                    >
+                      {row.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => startEdit(row)}
+                    >
+                      <Pencil className="size-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {list.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                    No matches found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
+      )}
 
-        <div className="rounded-lg border border-border bg-card p-5">
-          {!form || !activeConfig ? (
-            <div className="text-sm text-muted-foreground">Select match config.</div>
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                save.mutate();
-              }}
-              className="space-y-5"
-            >
-              <div className="grid gap-3 md:grid-cols-2">
-                <Field label="Match #">
-                  <Input value={String(form.matchNumber)} disabled />
-                </Field>
-                <Field label="Active">
-                  <div className="flex h-10 items-center">
-                    <Switch
-                      checked={form.isActive}
-                      onCheckedChange={(value) => setForm({ ...form, isActive: value })}
-                    />
-                  </div>
-                </Field>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                <Field label="Stage">
-                  <Input
-                    value={form.stage}
-                    onChange={(e) => setForm({ ...form, stage: e.target.value })}
+      {isModalOpen && form && activeConfig && (
+        <FormModal
+          title={`Edit Bracket Config — Match #${form.matchNumber}`}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelected(null);
+            setForm(null);
+          }}
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              save.mutate();
+            }}
+            className="space-y-5"
+          >
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Match #">
+                <Input value={String(form.matchNumber)} disabled />
+              </Field>
+              <Field label="Active">
+                <div className="flex h-10 items-center">
+                  <Switch
+                    checked={form.isActive}
+                    onCheckedChange={(value) => setForm({ ...form, isActive: value })}
                   />
-                </Field>
-                <Field label="Group">
-                  <Input
-                    value={form.group || ""}
-                    onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                <Field label="Date">
-                  <Input
-                    type="date"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  />
-                </Field>
-                <Field label="Time">
-                  <Input
-                    type="time"
-                    value={form.time}
-                    onChange={(e) => setForm({ ...form, time: e.target.value })}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                <Field label="Stadium">
-                  <Input
-                    value={form.stadium}
-                    onChange={(e) => setForm({ ...form, stadium: e.target.value })}
-                  />
-                </Field>
-                <Field label="City">
-                  <Input
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <SeedEditor
-                  label="Home seed"
-                  seed={form.homeSeed || emptySeed}
-                  teams={teams.data || []}
-                  onChange={(seed) => setForm({ ...form, homeSeed: seed })}
-                />
-                <SeedEditor
-                  label="Away seed"
-                  seed={form.awaySeed || emptySeed}
-                  teams={teams.data || []}
-                  onChange={(seed) => setForm({ ...form, awaySeed: seed })}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">Advances</h2>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setForm({
-                        ...form,
-                        advances: [...(form.advances || []), { ...emptyAdvance, toMatchNumber: form.matchNumber }],
-                      })
-                    }
-                  >
-                    <Plus className="mr-1 size-3" /> Add
-                  </Button>
                 </div>
-                {(form.advances || []).map((advance, index) => (
-                  <div key={`${advance.toMatchNumber}-${index}`} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-4">
+              </Field>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Stage">
+                <Input
+                  value={form.stage}
+                  onChange={(e) => setForm({ ...form, stage: e.target.value })}
+                  placeholder="e.g. Round of 16"
+                />
+              </Field>
+              <Field label="Group">
+                <Input
+                  value={form.group || ""}
+                  onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
+                  placeholder="e.g. A"
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Date">
+                <Input
+                  type="date"
+                  value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })}
+                />
+              </Field>
+              <Field label="Time">
+                <Input
+                  type="time"
+                  value={form.time}
+                  onChange={(e) => setForm({ ...form, time: e.target.value })}
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-2">
+              <Field label="Stadium">
+                <Input
+                  value={form.stadium}
+                  onChange={(e) => setForm({ ...form, stadium: e.target.value })}
+                  placeholder="e.g. Lusail Stadium"
+                />
+              </Field>
+              <Field label="City">
+                <Input
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                  placeholder="e.g. Lusail"
+                />
+              </Field>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <SeedEditor
+                label="Home seed"
+                seed={form.homeSeed || emptySeed}
+                teams={teams.data || []}
+                onChange={(homeSeed) => setForm({ ...form, homeSeed })}
+              />
+              <SeedEditor
+                label="Away seed"
+                seed={form.awaySeed || emptySeed}
+                teams={teams.data || []}
+                onChange={(awaySeed) => setForm({ ...form, awaySeed })}
+              />
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold">Advances ({form.advances?.length || 0})</h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setForm({ ...form, advances: [...(form.advances || []), emptyAdvance] })
+                  }
+                >
+                  Add advance
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {form.advances?.map((advance, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-3 rounded-md border border-border/60 bg-muted/20 p-3 md:grid-cols-4 relative"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = [...(form.advances || [])];
+                        next.splice(index, 1);
+                        setForm({ ...form, advances: next });
+                      }}
+                      className="absolute top-2 right-2 text-destructive hover:text-destructive/80 text-xs font-semibold"
+                    >
+                      Remove
+                    </button>
                     <Field label="Outcome">
                       <Select
                         value={advance.outcome}
                         onValueChange={(value) => {
                           const next = [...(form.advances || [])];
-                          next[index] = { ...advance, outcome: value as MatchAdvance["outcome"] };
+                          next[index] = {
+                            ...advance,
+                            outcome: value as MatchAdvance["outcome"],
+                          };
                           setForm({ ...form, advances: next });
                         }}
                       >
@@ -318,6 +401,7 @@ function BracketAdmin() {
                           next[index] = { ...advance, toMatchNumber: Number(e.target.value) };
                           setForm({ ...form, advances: next });
                         }}
+                        placeholder="e.g. 73"
                       />
                     </Field>
                     <Field label="Slot">
@@ -336,27 +420,15 @@ function BracketAdmin() {
                         </SelectContent>
                       </Select>
                     </Field>
-                    <div className="flex items-end">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          const next = [...(form.advances || [])];
-                          next.splice(index, 1);
-                          setForm({ ...form, advances: next });
-                        }}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
                   </div>
                 ))}
               </div>
+            </div>
 
-              <div className="space-y-3 rounded-lg border border-border p-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold">Bracket placement</h2>
+            <div className="space-y-3 rounded-lg border border-border p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold font-mono">bracket round mapping</h2>
+                <div className="flex h-6 items-center">
                   <Switch
                     checked={form.bracket?.enabled || false}
                     onCheckedChange={(value) =>
@@ -372,8 +444,10 @@ function BracketAdmin() {
                     }
                   />
                 </div>
+              </div>
+              {form.bracket?.enabled && (
                 <div className="grid gap-3 md:grid-cols-3">
-                  <Field label="Round">
+                  <Field label="Round Key">
                     <Select
                       value={form.bracket?.roundKey || "r32"}
                       onValueChange={(value) =>
@@ -381,7 +455,7 @@ function BracketAdmin() {
                           ...form,
                           bracket: {
                             enabled: form.bracket?.enabled || false,
-                            roundKey: value as NonNullable<MatchConfig["bracket"]>["roundKey"],
+                            roundKey: value,
                             side: form.bracket?.side || "left",
                             order: form.bracket?.order || 0,
                           },
@@ -390,12 +464,12 @@ function BracketAdmin() {
                     >
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="r32">r32</SelectItem>
-                        <SelectItem value="r16">r16</SelectItem>
-                        <SelectItem value="qf">qf</SelectItem>
-                        <SelectItem value="sf">sf</SelectItem>
-                        <SelectItem value="third">third</SelectItem>
-                        <SelectItem value="final">final</SelectItem>
+                        <SelectItem value="r32">r32 (Round of 32)</SelectItem>
+                        <SelectItem value="r16">r16 (Round of 16)</SelectItem>
+                        <SelectItem value="qf">qf (Quarter-finals)</SelectItem>
+                        <SelectItem value="sf">sf (Semi-finals)</SelectItem>
+                        <SelectItem value="third">third (Third place)</SelectItem>
+                        <SelectItem value="final">final (Final)</SelectItem>
                       </SelectContent>
                     </Select>
                   </Field>
@@ -438,19 +512,54 @@ function BracketAdmin() {
                           },
                         })
                       }
+                      placeholder="e.g. 0"
                     />
                   </Field>
                 </div>
-              </div>
+              )}
+            </div>
 
-              <Button disabled={save.isPending}>
-                {save.isPending ? "Saving..." : `Save match ${form.matchNumber}`}
-              </Button>
-            </form>
-          )}
-        </div>
-      </div>
+            <Button disabled={save.isPending} className="w-full">
+              {save.isPending ? "Saving..." : `Save changes`}
+            </Button>
+          </form>
+        </FormModal>
+      )}
     </AdminShell>
+  );
+}
+
+function FormModal({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[90] bg-background/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-300 ease-out"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h2 className="font-semibold">{title}</h2>
+          <button
+            onClick={onClose}
+            className="size-8 inline-flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="p-5 overflow-y-auto">{children}</div>
+      </div>
+    </div>
   );
 }
 
@@ -506,6 +615,7 @@ function SeedEditor({
             min={1}
             value={String(seed.fromMatchNumber || "")}
             onChange={(e) => onChange({ ...seed, fromMatchNumber: Number(e.target.value) })}
+            placeholder="e.g. 49"
           />
         </Field>
       ) : null}
@@ -513,6 +623,7 @@ function SeedEditor({
         <Input
           value={seed.label || ""}
           onChange={(e) => onChange({ ...seed, label: e.target.value })}
+          placeholder="e.g. Winner Match 49"
         />
       </Field>
     </div>

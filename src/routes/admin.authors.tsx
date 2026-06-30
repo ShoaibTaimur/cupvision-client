@@ -11,6 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/admin/authors")({
   head: () => ({ meta: [{ title: "Authors — CupVision Admin" }] }),
@@ -28,6 +38,7 @@ function AuthorsAdmin() {
   const [editing, setEditing] = useState<Author | null>(null);
   const [form, setForm] = useState(empty);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   const save = useMutation({
     mutationFn: async () =>
@@ -111,7 +122,7 @@ function AuthorsAdmin() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => confirm(`Delete ${a.name}?`) && del.mutate(a._id)}
+                      onClick={() => setDeleteConfirm({ id: a._id, title: a.name })}
                       className="text-destructive hover:bg-destructive/20 hover:text-destructive"
                     >
                       <Trash2 className="size-4" />
@@ -152,6 +163,7 @@ function AuthorsAdmin() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. John Doe"
               />
             </Field>
             <Field label="Role *">
@@ -159,12 +171,14 @@ function AuthorsAdmin() {
                 required
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
+                placeholder="e.g. Lead Designer"
               />
             </Field>
             <Field label="Image URL">
               <Input
                 value={form.image}
                 onChange={(e) => setForm({ ...form, image: e.target.value })}
+                placeholder="e.g. https://example.com/avatar.jpg"
               />
             </Field>
             <Field label="Bio">
@@ -172,24 +186,28 @@ function AuthorsAdmin() {
                 value={form.bio}
                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
                 rows={3}
+                placeholder="e.g. Software engineer and sports enthusiast."
               />
             </Field>
             <Field label="GitHub URL">
               <Input
                 value={form.github}
                 onChange={(e) => setForm({ ...form, github: e.target.value })}
+                placeholder="e.g. https://github.com/johndoe"
               />
             </Field>
             <Field label="LinkedIn URL">
               <Input
                 value={form.linkedin}
                 onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
+                placeholder="e.g. https://linkedin.com/in/johndoe"
               />
             </Field>
             <Field label="Portfolio URL">
               <Input
                 value={form.portfolio}
                 onChange={(e) => setForm({ ...form, portfolio: e.target.value })}
+                placeholder="e.g. https://johndoe.dev"
               />
             </Field>
             <Button
@@ -201,6 +219,32 @@ function AuthorsAdmin() {
           </form>
         </FormModal>
       )}
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the author{" "}
+              <strong className="text-foreground">"{deleteConfirm?.title}"</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={() => {
+                if (deleteConfirm) {
+                  del.mutate(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminShell>
   );
 }

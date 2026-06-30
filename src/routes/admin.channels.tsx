@@ -13,6 +13,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/admin/channels")({
   head: () => ({ meta: [{ title: "Channels — CupVision Admin" }] }),
@@ -45,6 +55,7 @@ function ChannelsAdmin() {
   const [editing, setEditing] = useState<AdminChannel | null>(null);
   const [form, setForm] = useState(empty);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -167,9 +178,7 @@ function ChannelsAdmin() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() =>
-                          confirm(`Delete ${channel.name}?`) && del.mutate(channel._id)
-                        }
+                        onClick={() => setDeleteConfirm({ id: channel._id, title: channel.name })}
                         className="text-destructive hover:bg-destructive/15 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
@@ -211,6 +220,7 @@ function ChannelsAdmin() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="e.g. T-Sports HD"
               />
             </Field>
 
@@ -219,12 +229,14 @@ function ChannelsAdmin() {
                 <Input
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  placeholder="e.g. Sports Streams"
                 />
               </Field>
               <Field label="Badge">
                 <Input
                   value={form.badge}
                   onChange={(e) => setForm({ ...form, badge: e.target.value })}
+                  placeholder="e.g. LIVE"
                 />
               </Field>
             </div>
@@ -234,6 +246,7 @@ function ChannelsAdmin() {
                 rows={3}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="e.g. Watch high quality live coverage of the tournament matches."
               />
             </Field>
 
@@ -269,6 +282,7 @@ function ChannelsAdmin() {
                   min={0}
                   value={form.sortOrder}
                   onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
+                  placeholder="e.g. 0"
                 />
               </Field>
             </div>
@@ -278,6 +292,7 @@ function ChannelsAdmin() {
                 type="url"
                 value={form.poster}
                 onChange={(e) => setForm({ ...form, poster: e.target.value })}
+                placeholder="e.g. https://example.com/channel-poster.jpg"
               />
             </Field>
 
@@ -357,6 +372,32 @@ function ChannelsAdmin() {
           </form>
         </FormModal>
       )}
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the channel{" "}
+              <strong className="text-foreground">"{deleteConfirm?.title}"</strong>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={() => {
+                if (deleteConfirm) {
+                  del.mutate(deleteConfirm.id);
+                  setDeleteConfirm(null);
+                }
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminShell>
   );
 }

@@ -22,7 +22,7 @@ import {
 const NAV = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/matches", label: "Matches", icon: Calendar },
-  { to: "/admin/bracket", label: "Bracket Config", icon: GitBranch },
+  { to: "/admin/bracket", label: "Bracket", icon: GitBranch },
   { to: "/admin/channels", label: "Channels", icon: Radio },
   { to: "/admin/teams", label: "Teams", icon: Users },
   { to: "/admin/authors", label: "Authors", icon: UserCog },
@@ -72,8 +72,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <aside className="hidden w-60 shrink-0 self-start border-r border-border bg-card md:sticky md:top-0 md:flex md:min-h-screen md:flex-col">
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      <aside className="hidden w-60 shrink-0 self-start border-r border-border bg-card lg:sticky lg:top-0 lg:flex lg:min-h-screen lg:flex-col">
         <Link to="/" className="flex items-center gap-2 px-5 py-4 border-b border-border">
           <div className="size-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground">
             <Trophy className="size-5" />
@@ -113,7 +113,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <header className="md:hidden sticky top-0 z-40 backdrop-blur-lg bg-background/80 border-b border-border w-full">
+      <header className="lg:hidden sticky top-0 z-40 backdrop-blur-lg bg-background/80 border-b border-border w-full">
         <div className="h-14 px-4 flex items-center justify-between">
           <Link to="/admin/dashboard" className="flex items-center gap-2">
             <div className="size-7 rounded-md bg-primary flex items-center justify-center text-primary-foreground">
@@ -137,7 +137,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {open &&
         typeof document !== "undefined" &&
         createPortal(
-          <div className="md:hidden fixed inset-0 z-[100] overflow-hidden">
+          <div className="lg:hidden fixed inset-0 z-[100] overflow-hidden">
             <div
               className={`absolute inset-0 bg-background/60 backdrop-blur-md ${closing ? "animate-out fade-out duration-300" : "animate-in fade-in duration-200"}`}
               onClick={closeMenu}
