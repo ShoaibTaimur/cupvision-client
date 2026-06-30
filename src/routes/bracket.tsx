@@ -54,6 +54,13 @@ function teamLabel(t?: Team | null, fallback = "TBD") {
   return t.name;
 }
 
+function hasTeam(match?: BracketMatch) {
+  if (!match) return false;
+  const hasHome = match.homeTeam && match.homeTeam.name && match.homeTeam.name !== "TBD";
+  const hasAway = match.awayTeam && match.awayTeam.name && match.awayTeam.name !== "TBD";
+  return !!(hasHome || hasAway);
+}
+
 function buildConnectorPath(startX: number, startY: number, endX: number, endY: number) {
   const midX = (startX + endX) / 2;
   return [
@@ -185,28 +192,7 @@ function MatchCell({
   );
 }
 
-function collectLineage(
-  matchNumber: number,
-  childToParents: Record<number, number[]>,
-  parentToChildren: Record<number, number[]>,
-) {
-  const related = new Set<number>([matchNumber]);
-  const queue = [matchNumber];
 
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    const parents = childToParents[current] ?? [];
-    const children = parentToChildren[current] ?? [];
-
-    [...parents, ...children].forEach((next) => {
-      if (related.has(next)) return;
-      related.add(next);
-      queue.push(next);
-    });
-  }
-
-  return related;
-}
 
 function BracketConnectorLayer({
   width,
@@ -378,13 +364,52 @@ function BracketPage() {
     Math.max(...Array.from(bracketPositions.values()), finalTop, thirdPlaceTop, 0) +
     MATCH_CARD_HEIGHT;
 
-  const hoveredLineage = useMemo(
-    () =>
-      hoveredMatch == null
-        ? null
-        : collectLineage(hoveredMatch, childToParents, parentToChildren),
-    [childToParents, hoveredMatch, parentToChildren],
-  );
+  const hoverHighlight = useMemo(() => {
+    if (hoveredMatch == null) {
+      return null;
+    }
+
+    const matches = new Set<number>([hoveredMatch]);
+    const connectors = new Set<string>();
+
+    const parents = pairings[hoveredMatch];
+    if (parents && parents.length > 0) {
+      const queue = [...parents];
+      parents.forEach((p) => {
+        matches.add(p);
+        connectors.add(`${p}-${hoveredMatch}`);
+      });
+
+      while (queue.length > 0) {
+        const current = queue.shift()!;
+        const currParents = pairings[current];
+        if (currParents) {
+          currParents.forEach((p) => {
+            if (!matches.has(p)) {
+              matches.add(p);
+              connectors.add(`${p}-${current}`);
+              queue.push(p);
+            }
+          });
+        }
+      }
+    } else {
+      const matchObj = byNumber.get(hoveredMatch);
+      if (matchObj && matchObj.status === "completed") {
+        const children = parentToChildren[hoveredMatch] || [];
+        children.forEach((c) => {
+          matches.add(c);
+          connectors.add(`${hoveredMatch}-${c}`);
+        });
+      }
+    }
+
+    if (connectors.size === 0) {
+      return null;
+    }
+
+    return { matches, connectors };
+  }, [hoveredMatch, pairings, parentToChildren, byNumber]);
 
   const connectorSources = useMemo<[number, [number, number]][]>(
     () =>
@@ -453,9 +478,9 @@ function BracketPage() {
             isCompleted: parentMatch?.status === "completed",
             isLive: parentMatch?.status === "live" || childMatch?.status === "live",
             isHighlighted:
-              hoveredLineage != null && hoveredLineage.has(parent) && hoveredLineage.has(child),
+              hoverHighlight != null && hoverHighlight.connectors.has(`${parent}-${child}`),
             isDimmed:
-              hoveredLineage != null && (!hoveredLineage.has(parent) || !hoveredLineage.has(child)),
+              hoverHighlight != null && !hoverHighlight.connectors.has(`${parent}-${child}`),
           });
         });
       });
@@ -476,7 +501,7 @@ function BracketPage() {
       observer.disconnect();
       window.removeEventListener("resize", rebuild);
     };
-  }, [bracketPositions, connectorSources, finalMatch, finalTop, hoveredLineage, leftColumns, rightColumns, byNumber]);
+  }, [bracketPositions, connectorSources, finalMatch, finalTop, hoverHighlight, leftColumns, rightColumns, byNumber]);
 
   return (
     <SectionReveal delay={0.08} className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6">
@@ -514,7 +539,7 @@ function BracketPage() {
                 columns={leftColumns}
                 positions={bracketPositions}
                 height={bracketHeight}
-                hoveredLineage={hoveredLineage}
+                hoverHighlight={hoverHighlight}
                 onHoverChange={setHoveredMatch}
                 onSelect={setSelected}
               />
@@ -535,15 +560,17 @@ function BracketPage() {
                         finalMatch?.awayPlaceholder || "TBD",
                       ]}
                       onClick={finalMatch ? () => setSelected(finalMatch) : undefined}
-                      onHoverChange={(hovered) =>
-                        setHoveredMatch(hovered && finalMatch ? finalMatch.matchNumber : null)
-                      }
-                      isHighlighted={finalMatch ? hoveredLineage?.has(finalMatch.matchNumber) ?? false : false}
+                      onHoverChange={(hovered) => {
+                        if (hovered && finalMatch && !hasTeam(finalMatch)) {
+                          setHoveredMatch(null);
+                          return;
+                        }
+                        setHoveredMatch(hovered && finalMatch ? finalMatch.matchNumber : null);
+                      }}
+                      isHighlighted={finalMatch && hoverHighlight ? hoverHighlight.matches.has(finalMatch.matchNumber) : false}
                       isDimmed={
-                        finalMatch
-                          ? hoveredLineage != null &&
-                            !(hoveredLineage?.has(finalMatch.matchNumber) ?? false)
-                          : false
+                        hoverHighlight != null &&
+                        (!finalMatch || !hoverHighlight.matches.has(finalMatch.matchNumber))
                       }
                     />
                   </div>
@@ -558,15 +585,17 @@ function BracketPage() {
                         thirdPlace?.awayPlaceholder || "TBD",
                       ]}
                       onClick={thirdPlace ? () => setSelected(thirdPlace) : undefined}
-                      onHoverChange={(hovered) =>
-                        setHoveredMatch(hovered && thirdPlace ? thirdPlace.matchNumber : null)
-                      }
-                      isHighlighted={thirdPlace ? hoveredLineage?.has(thirdPlace.matchNumber) ?? false : false}
+                      onHoverChange={(hovered) => {
+                        if (hovered && thirdPlace && !hasTeam(thirdPlace)) {
+                          setHoveredMatch(null);
+                          return;
+                        }
+                        setHoveredMatch(hovered && thirdPlace ? thirdPlace.matchNumber : null);
+                      }}
+                      isHighlighted={thirdPlace && hoverHighlight ? hoverHighlight.matches.has(thirdPlace.matchNumber) : false}
                       isDimmed={
-                        thirdPlace
-                          ? hoveredLineage != null &&
-                            !(hoveredLineage?.has(thirdPlace.matchNumber) ?? false)
-                          : false
+                        hoverHighlight != null &&
+                        (!thirdPlace || !hoverHighlight.matches.has(thirdPlace.matchNumber))
                       }
                     />
                   </div>
@@ -576,7 +605,7 @@ function BracketPage() {
                 columns={rightColumns}
                 positions={bracketPositions}
                 height={bracketHeight}
-                hoveredLineage={hoveredLineage}
+                hoverHighlight={hoverHighlight}
                 onHoverChange={setHoveredMatch}
                 onSelect={setSelected}
               />
@@ -594,14 +623,14 @@ function BracketHalf({
   columns,
   positions,
   height,
-  hoveredLineage,
+  hoverHighlight,
   onHoverChange,
   onSelect,
 }: {
   columns: ReadonlyArray<{ key: string; title: string; matches: BracketMatch[] }>;
   positions: Map<number, number>;
   height: number;
-  hoveredLineage: Set<number> | null;
+  hoverHighlight: { matches: Set<number>; connectors: Set<string> } | null;
   onHoverChange: (matchNumber: number | null) => void;
   onSelect: (match: BracketMatch | null) => void;
 }) {
@@ -619,8 +648,8 @@ function BracketHalf({
           </div>
           <div className="relative" style={{ height }}>
             {col.matches.map((match) => {
-              const isHighlighted = hoveredLineage?.has(match.matchNumber) ?? false;
-              const isDimmed = hoveredLineage != null && !isHighlighted;
+              const isHighlighted = hoverHighlight != null && hoverHighlight.matches.has(match.matchNumber);
+              const isDimmed = hoverHighlight != null && !isHighlighted;
               return (
                 <div
                   key={match.matchNumber}
@@ -631,9 +660,13 @@ function BracketHalf({
                     match={match}
                     placeholders={[match.homePlaceholder, match.awayPlaceholder]}
                     onClick={() => onSelect(match)}
-                    onHoverChange={(hovered) =>
-                      onHoverChange(hovered ? match.matchNumber : null)
-                    }
+                    onHoverChange={(hovered) => {
+                      if (hovered && !hasTeam(match)) {
+                        onHoverChange(null);
+                        return;
+                      }
+                      onHoverChange(hovered ? match.matchNumber : null);
+                    }}
                     isHighlighted={isHighlighted}
                     isDimmed={isDimmed}
                   />
