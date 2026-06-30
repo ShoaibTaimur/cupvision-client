@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "@/components/admin-shell";
 import { api, HealScoresResult, MatchAdvance, MatchConfig, MatchConfigSyncResult, MatchSeed, Team } from "@/lib/api";
 import { Skeleton } from "@/components/skeleton";
@@ -24,6 +24,13 @@ const emptyAdvance: MatchAdvance = { outcome: "winner", toMatchNumber: 1, slot: 
 function BracketAdmin() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [healProgressData, setHealProgressData] = useState<{
+    active: boolean;
+    current: number;
+    total: number;
+    message: string;
+  } | null>(null);
+
   const [selected, setSelected] = useState<number | null>(null);
   const configs = useQuery({
     queryKey: ["match-configs"],
@@ -83,6 +90,27 @@ function BracketAdmin() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  useEffect(() => {
+    if (!healScores.isPending) {
+      setHealProgressData(null);
+      return;
+    }
+    const interval = setInterval(async () => {
+      try {
+        const res = await api.get<{
+          active: boolean;
+          current: number;
+          total: number;
+          message: string;
+        }>("/api/match-configs/heal-progress", true);
+        setHealProgressData(res);
+      } catch (err) {
+        // ignore
+      }
+    }, 400);
+    return () => clearInterval(interval);
+  }, [healScores.isPending]);
+
   const startEdit = (config: MatchConfig) => {
     setSelected(config.matchNumber);
     const next = JSON.parse(JSON.stringify(config)) as MatchConfig;
@@ -110,6 +138,25 @@ function BracketAdmin() {
           </Button>
         </div>
       </div>
+
+      {healScores.isPending && healProgressData && (
+        <div className="mb-6 p-4 rounded-lg border border-border bg-card max-w-xl">
+          <div className="flex justify-between items-center text-sm font-semibold mb-2">
+            <span className="truncate text-muted-foreground">{healProgressData.message}</span>
+            <span className="font-mono text-xs whitespace-nowrap ml-4">
+              {healProgressData.current} / {healProgressData.total}
+            </span>
+          </div>
+          <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
+            <div
+              className="bg-primary h-full transition-all duration-300 ease-out"
+              style={{
+                width: `${(healProgressData.current / (healProgressData.total || 1)) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <div className="rounded-lg border border-border bg-card p-4">

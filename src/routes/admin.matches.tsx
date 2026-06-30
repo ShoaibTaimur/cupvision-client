@@ -99,6 +99,7 @@ function MatchesAdmin() {
       notes: m.notes || "",
       externalMatchId: m.externalMatchId || "",
     });
+    setFormModalOpen(true);
   }
 
   return (
@@ -123,8 +124,7 @@ function MatchesAdmin() {
       <LiveTrackingPanel />
 
 
-      <div className="grid lg:grid-cols-[1fr_400px] gap-6">
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
+      <div className="bg-card border border-border rounded-lg overflow-hidden">
           {list.isLoading ? (
             <Skeleton className="h-64" />
           ) : (
@@ -207,151 +207,6 @@ function MatchesAdmin() {
             </Table>
           )}
         </div>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            save.mutate();
-          }}
-          className="bg-card border border-border rounded-lg p-5 space-y-3 h-fit hidden lg:block lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto"
-        >
-          <h2 className="font-semibold">
-            {editing ? `Edit match #${editing.matchNumber}` : "New match"}
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Match # *">
-              <Input
-                type="number"
-                min={1}
-                required
-                value={form.matchNumber}
-                onChange={(e) => setForm({ ...form, matchNumber: Number(e.target.value) })}
-              />
-            </Field>
-            <Field label="Status *">
-              <Select
-                value={form.status}
-                onValueChange={(value) => setForm({ ...form, status: value as any })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s.replace("_", " ")}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-          <Field label="Live provider match ID">
-            <Input
-              value={form.externalMatchId}
-              onChange={(e) => setForm({ ...form, externalMatchId: e.target.value })}
-              placeholder="Provider fixture or match id"
-            />
-          </Field>
-          <Field label="Home team *">
-            <Select
-              required
-              value={form.homeTeamId}
-              onValueChange={(value) => setForm({ ...form, homeTeamId: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="— select —" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams.data?.map((t) => (
-                  <SelectItem key={t._id} value={t._id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Away team *">
-            <Select
-              required
-              value={form.awayTeamId}
-              onValueChange={(value) => setForm({ ...form, awayTeamId: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="— select —" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams.data?.map((t) => (
-                  <SelectItem key={t._id} value={t._id}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Date *">
-              <Input
-                required
-                type="date"
-                value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
-              />
-            </Field>
-            <Field label="Time *">
-              <Input
-                required
-                type="time"
-                value={form.time}
-                onChange={(e) => setForm({ ...form, time: e.target.value })}
-              />
-            </Field>
-          </div>
-          <Field label="Stadium *">
-            <Input
-              required
-              value={form.stadium}
-              onChange={(e) => setForm({ ...form, stadium: e.target.value })}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="City *">
-              <Input
-                required
-                value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })}
-              />
-            </Field>
-            <Field label="Group (A-L)">
-              <Input
-                value={form.group}
-                maxLength={1}
-                onChange={(e) => setForm({ ...form, group: e.target.value.toUpperCase() })}
-              />
-            </Field>
-          </div>
-          <Field label="Stage *">
-            <Input
-              required
-              value={form.stage}
-              onChange={(e) => setForm({ ...form, stage: e.target.value })}
-            />
-          </Field>
-          <Field label="Notes">
-            <Textarea
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-              rows={2}
-            />
-          </Field>
-          <Button
-            disabled={save.isPending}
-            className="w-full"
-          >
-            {save.isPending ? "Saving..." : editing ? "Update" : "Create"}
-          </Button>
-        </form>
-      </div>
 
       {resultFor && (
         <ResultModal
