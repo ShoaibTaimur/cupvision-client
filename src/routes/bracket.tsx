@@ -339,15 +339,21 @@ function MatchDetailsDialog({
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
               <TeamBlock team={match.homeTeam} highlight={homeWin} dim={awayWin} align="left" />
               <div className="text-center">
-                <div className="text-2xl font-black tabular-nums">
-                  {typeof match.homeScore === "number" ? match.homeScore : "–"}
-                  <span className="mx-2 text-white/30">:</span>
-                  {typeof match.awayScore === "number" ? match.awayScore : "–"}
+              <div className="text-2xl font-black tabular-nums">
+                {typeof match.homeScore === "number" ? match.homeScore : "–"}
+                <span className="mx-2 text-white/30">:</span>
+                {typeof match.awayScore === "number" ? match.awayScore : "–"}
+              </div>
+              {typeof match.homePenaltyScore === "number" &&
+              typeof match.awayPenaltyScore === "number" ? (
+                <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
+                  Pens {match.homePenaltyScore} - {match.awayPenaltyScore}
                 </div>
-                {match.isDraw && (
-                  <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
-                    Draw
-                  </div>
+              ) : null}
+              {match.isDraw && (
+                <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
+                  Draw
+                </div>
                 )}
               </div>
               <TeamBlock team={match.awayTeam} highlight={awayWin} dim={homeWin} align="right" />

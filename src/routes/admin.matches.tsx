@@ -652,6 +652,15 @@ function ResultModal({
 }) {
   const [home, setHome] = useState<number>(match.homeScore ?? 0);
   const [away, setAway] = useState<number>(match.awayScore ?? 0);
+  const [homePens, setHomePens] = useState<string>(
+    typeof match.homePenaltyScore === "number" ? String(match.homePenaltyScore) : "",
+  );
+  const [awayPens, setAwayPens] = useState<string>(
+    typeof match.awayPenaltyScore === "number" ? String(match.awayPenaltyScore) : "",
+  );
+  const parsedHomePens = homePens === "" ? undefined : Math.max(0, Number(homePens) || 0);
+  const parsedAwayPens = awayPens === "" ? undefined : Math.max(0, Number(awayPens) || 0);
+  const penaltiesUsed = parsedHomePens !== undefined || parsedAwayPens !== undefined;
 
   const saveLive = useMutation({
     mutationFn: () =>
@@ -669,7 +678,20 @@ function ResultModal({
 
   const finish = useMutation({
     mutationFn: () =>
-      api.post(`/api/matches/${match._id}/result`, { homeScore: home, awayScore: away }, true),
+      api.post(
+        `/api/matches/${match._id}/result`,
+        {
+          homeScore: home,
+          awayScore: away,
+          ...(penaltiesUsed
+            ? {
+                homePenaltyScore: parsedHomePens ?? 0,
+                awayPenaltyScore: parsedAwayPens ?? 0,
+              }
+            : {}),
+        },
+        true,
+      ),
     onSuccess: () => {
       toast.success("Match finished");
       onSaved();
@@ -743,11 +765,36 @@ function ResultModal({
           <Stepper label={match.homeTeam?.name || "Home"} value={home} onChange={setHome} />
           <Stepper label={match.awayTeam?.name || "Away"} value={away} onChange={setAway} />
         </div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <Field label="Home pens">
+            <Input
+              type="number"
+              min={0}
+              value={homePens}
+              onChange={(e) => setHomePens(e.target.value)}
+              placeholder="Optional"
+            />
+          </Field>
+          <Field label="Away pens">
+            <Input
+              type="number"
+              min={0}
+              value={awayPens}
+              onChange={(e) => setAwayPens(e.target.value)}
+              placeholder="Optional"
+            />
+          </Field>
+        </div>
         <p className="text-[11px] text-muted-foreground mt-3">
           Tap + / − to update goals during the match. The match stays{" "}
           <span className="font-medium">live</span> until you press{" "}
           <span className="font-medium">Finish match</span>.
         </p>
+        {home === away ? (
+          <p className="text-[11px] text-muted-foreground mt-2">
+            If knockout tie, enter penalties to set winner.
+          </p>
+        ) : null}
         <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4">
           <Button variant="outline" onClick={onClose} disabled={busy}>
             Cancel
@@ -820,4 +867,3 @@ function LiveTrackingPanel() {
     </div>
   );
 }
-

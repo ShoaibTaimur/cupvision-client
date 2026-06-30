@@ -83,6 +83,8 @@ export interface Match {
   status: "scheduled" | "live" | "awaiting_result" | "completed" | "cancelled" | "postponed";
   homeScore?: number;
   awayScore?: number;
+  homePenaltyScore?: number;
+  awayPenaltyScore?: number;
   winnerTeamId?: string | null;
   isDraw?: boolean;
   notes?: string;
