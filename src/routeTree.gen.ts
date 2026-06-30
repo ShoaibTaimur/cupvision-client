@@ -26,6 +26,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminImportRouteImport } from './routes/admin.import'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
 import { Route as AdminChannelsRouteImport } from './routes/admin.channels'
+import { Route as AdminBracketRouteImport } from './routes/admin.bracket'
 import { Route as AdminAuthorsRouteImport } from './routes/admin.authors'
 
 const WatchRoute = WatchRouteImport.update({
@@ -113,6 +114,11 @@ const AdminChannelsRoute = AdminChannelsRouteImport.update({
   path: '/admin/channels',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminBracketRoute = AdminBracketRouteImport.update({
+  id: '/admin/bracket',
+  path: '/admin/bracket',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminAuthorsRoute = AdminAuthorsRouteImport.update({
   id: '/admin/authors',
   path: '/admin/authors',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/timeline': typeof TimelineRoute
   '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
+  '/admin/bracket': typeof AdminBracketRoute
   '/admin/channels': typeof AdminChannelsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/import': typeof AdminImportRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/timeline': typeof TimelineRoute
   '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
+  '/admin/bracket': typeof AdminBracketRoute
   '/admin/channels': typeof AdminChannelsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/import': typeof AdminImportRoute
@@ -171,6 +179,7 @@ export interface FileRoutesById {
   '/timeline': typeof TimelineRoute
   '/watch': typeof WatchRoute
   '/admin/authors': typeof AdminAuthorsRoute
+  '/admin/bracket': typeof AdminBracketRoute
   '/admin/channels': typeof AdminChannelsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/import': typeof AdminImportRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/timeline'
     | '/watch'
     | '/admin/authors'
+    | '/admin/bracket'
     | '/admin/channels'
     | '/admin/dashboard'
     | '/admin/import'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/timeline'
     | '/watch'
     | '/admin/authors'
+    | '/admin/bracket'
     | '/admin/channels'
     | '/admin/dashboard'
     | '/admin/import'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/timeline'
     | '/watch'
     | '/admin/authors'
+    | '/admin/bracket'
     | '/admin/channels'
     | '/admin/dashboard'
     | '/admin/import'
@@ -254,6 +266,7 @@ export interface RootRouteChildren {
   TimelineRoute: typeof TimelineRoute
   WatchRoute: typeof WatchRoute
   AdminAuthorsRoute: typeof AdminAuthorsRoute
+  AdminBracketRoute: typeof AdminBracketRoute
   AdminChannelsRoute: typeof AdminChannelsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
   AdminImportRoute: typeof AdminImportRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminChannelsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/bracket': {
+      id: '/admin/bracket'
+      path: '/admin/bracket'
+      fullPath: '/admin/bracket'
+      preLoaderRoute: typeof AdminBracketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/authors': {
       id: '/admin/authors'
       path: '/admin/authors'
@@ -406,6 +426,7 @@ const rootRouteChildren: RootRouteChildren = {
   TimelineRoute: TimelineRoute,
   WatchRoute: WatchRoute,
   AdminAuthorsRoute: AdminAuthorsRoute,
+  AdminBracketRoute: AdminBracketRoute,
   AdminChannelsRoute: AdminChannelsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
   AdminImportRoute: AdminImportRoute,

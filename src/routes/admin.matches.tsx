@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/match-card";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, Trophy } from "lucide-react";
 import { Field } from "./admin.teams";
-import { formatDateTime } from "@/lib/date";
+import { formatMatchDateTime, getFormDate, getFormTime } from "@/lib/date";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -89,8 +89,8 @@ function MatchesAdmin() {
       matchNumber: m.matchNumber,
       homeTeamId: m.homeTeamId,
       awayTeamId: m.awayTeamId,
-      date: m.date,
-      time: m.time,
+      date: getFormDate(m.date),
+      time: getFormTime(m.date, m.time),
       stadium: m.stadium,
       city: m.city,
       stage: m.stage,
@@ -159,12 +159,12 @@ function MatchesAdmin() {
                         {m.group ? ` · Group ${m.group}` : ""}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1 sm:hidden flex items-center gap-2">
-                        <span>{formatDateTime(m.date, m.time)}</span>
+                        <span>{formatMatchDateTime(m.date, m.time)}</span>
                         <StatusBadge status={m.status} />
                       </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground hidden sm:table-cell">
-                      {formatDateTime(m.date, m.time)}
+                      {formatMatchDateTime(m.date, m.time)}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <StatusBadge status={m.status} />
@@ -606,7 +606,7 @@ function ActionsModal({
             {match.homeTeam?.name} vs {match.awayTeam?.name}
           </div>
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-            <span>{formatDateTime(match.date, match.time)}</span>
+            <span>{formatMatchDateTime(match.date, match.time)}</span>
             <StatusBadge status={match.status} />
           </div>
         </div>

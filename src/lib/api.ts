@@ -95,6 +95,90 @@ export interface Match {
   lastLiveSyncAt?: string | null;
   liveSyncError?: string | null;
 }
+export interface MatchSeed {
+  kind: "team" | "winner" | "loser" | "placeholder";
+  teamId?: string;
+  fromMatchNumber?: number;
+  label?: string;
+}
+export interface MatchAdvance {
+  outcome: "winner" | "loser";
+  toMatchNumber: number;
+  slot: "home" | "away";
+}
+export interface MatchBracketPlacement {
+  enabled: boolean;
+  roundKey: "r32" | "r16" | "qf" | "sf" | "third" | "final";
+  side: "left" | "right" | "center";
+  order: number;
+}
+export interface MatchConfig {
+  _id?: string;
+  matchNumber: number;
+  stage: string;
+  group?: string;
+  date: string;
+  time: string;
+  stadium: string;
+  city: string;
+  homeSeed?: MatchSeed | null;
+  awaySeed?: MatchSeed | null;
+  advances?: MatchAdvance[];
+  bracket?: MatchBracketPlacement;
+  isActive: boolean;
+  homeSeedTeam?: Team | null;
+  awaySeedTeam?: Team | null;
+  homePlaceholder?: string;
+  awayPlaceholder?: string;
+}
+export interface MatchConfigSyncResult {
+  ok: boolean;
+  seasonId: string;
+  language: string;
+  synced: number;
+  officialMatches: number;
+}
+export interface HealScoresResult {
+  ok: boolean;
+  updated: number;
+  skipped: number;
+  knockoutUpdated: number;
+  groupUpdated: number;
+  errors: string[];
+}
+export interface BracketMatch {
+  matchNumber: number;
+  stage: string;
+  group?: string;
+  date: string;
+  time: string;
+  stadium: string;
+  city: string;
+  status: Match["status"];
+  homeScore?: number;
+  awayScore?: number;
+  homePenaltyScore?: number;
+  awayPenaltyScore?: number;
+  winnerTeamId?: string | null;
+  homeTeamId?: string | null;
+  awayTeamId?: string | null;
+  homeTeam?: Team | null;
+  awayTeam?: Team | null;
+  homeSeed?: MatchSeed | null;
+  awaySeed?: MatchSeed | null;
+  advances: MatchAdvance[];
+  bracket: MatchBracketPlacement;
+  homePlaceholder: string;
+  awayPlaceholder: string;
+}
+export interface BracketResponse {
+  matches: BracketMatch[];
+  columns: {
+    left: { r32: BracketMatch[]; r16: BracketMatch[]; qf: BracketMatch[]; sf: BracketMatch[] };
+    right: { sf: BracketMatch[]; qf: BracketMatch[]; r16: BracketMatch[]; r32: BracketMatch[] };
+    center: { final: BracketMatch[]; third: BracketMatch[] };
+  };
+}
 export interface Author {
   _id: string;
   name: string;

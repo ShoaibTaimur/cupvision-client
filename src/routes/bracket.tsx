@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, Match, Team } from "@/lib/api";
-import { BRACKET_PAIRINGS, bracketPrefixFor } from "@/lib/bracket";
+import { api, BracketMatch, BracketResponse, Team } from "@/lib/api";
 import { SectionReveal } from "@/components/section-reveal";
 import { Trophy, MapPin, Calendar, Clock } from "lucide-react";
+import { formatMatchDate, formatMatchTime } from "@/lib/date";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/bracket")({
@@ -32,10 +32,36 @@ export const Route = createFileRoute("/bracket")({
   component: BracketPage,
 });
 
+const MATCH_CARD_HEIGHT = 120;
+const MATCH_CARD_GAP = 20;
+const MATCH_CENTER_Y = MATCH_CARD_HEIGHT / 2;
+const HALF_COLUMN_MIN_WIDTH = 180;
+const FINAL_COLUMN_MIN_WIDTH = 220;
+const CONNECTOR_OFFSET = 10;
+
+type BracketConnector = {
+  key: string;
+  path: string;
+  isCompleted: boolean;
+  isLive: boolean;
+  isHighlighted: boolean;
+  isDimmed: boolean;
+};
+
 function teamLabel(t?: Team | null, fallback = "TBD") {
   if (!t) return fallback;
   if (!t.name || t.name === "TBD") return fallback;
   return t.name;
+}
+
+function buildConnectorPath(startX: number, startY: number, endX: number, endY: number) {
+  const midX = (startX + endX) / 2;
+  return [
+    `M ${startX} ${startY}`,
+    `L ${midX} ${startY}`,
+    `L ${midX} ${endY}`,
+    `L ${endX} ${endY}`,
+  ].join(" ");
 }
 
 function Slot({
@@ -97,7 +123,7 @@ function MatchCell({
   isHighlighted,
   isDimmed,
 }: {
-  match?: Match;
+  match?: BracketMatch;
   placeholders: [string, string];
   onClick?: () => void;
   onHoverChange?: (hovered: boolean) => void;
@@ -110,12 +136,7 @@ function MatchCell({
   const homeLose = completed && !!match.winnerTeamId && awayWin;
   const awayLose = completed && !!match.winnerTeamId && homeWin;
 
-  const dateLabel = match
-    ? new Date(match.date).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })
-    : "TBD";
+  const dateLabel = match ? formatMatchDate(match.date, match.time, "MMM D") : "TBD";
 
   const isLive = match?.status === "live";
   const clickable = !!match && !!onClick;
@@ -164,109 +185,18 @@ function MatchCell({
   );
 }
 
-const MATCH_CARD_HEIGHT = 120;
-const MATCH_CARD_GAP = 20;
-const MATCH_CENTER_Y = MATCH_CARD_HEIGHT / 2;
-const HALF_COLUMN_MIN_WIDTH = 180;
-const FINAL_COLUMN_MIN_WIDTH = 220;
-const CONNECTOR_OFFSET = 10;
-const LEFT_R32_ORDER = [73, 75, 74, 77, 83, 84, 81, 82] as const;
-const RIGHT_R32_ORDER = [76, 78, 79, 80, 86, 88, 85, 87] as const;
-const LEFT_R16_ORDER = [89, 90, 93, 94] as const;
-const RIGHT_R16_ORDER = [91, 92, 95, 96] as const;
-const LEFT_QF_ORDER = [97, 98] as const;
-const RIGHT_QF_ORDER = [99, 100] as const;
-const LEFT_SF_ORDER = [101] as const;
-const RIGHT_SF_ORDER = [102] as const;
-
-const LEFT_COLUMNS = [
-  { key: "left-r32", title: "Round of 32", matches: [...LEFT_R32_ORDER] },
-  { key: "left-r16", title: "Round of 16", matches: [...LEFT_R16_ORDER] },
-  { key: "left-qf", title: "Quarter Finals", matches: [...LEFT_QF_ORDER] },
-  { key: "left-sf", title: "Semi Finals", matches: [...LEFT_SF_ORDER] },
-] as const;
-
-const RIGHT_COLUMNS = [
-  { key: "right-sf", title: "Semi Finals", matches: [...RIGHT_SF_ORDER] },
-  { key: "right-qf", title: "Quarter Finals", matches: [...RIGHT_QF_ORDER] },
-  { key: "right-r16", title: "Round of 16", matches: [...RIGHT_R16_ORDER] },
-  { key: "right-r32", title: "Round of 32", matches: [...RIGHT_R32_ORDER] },
-] as const;
-
-function buildSidePositions(leafOrder: readonly number[], rounds: readonly (readonly number[])[]) {
-  const positions = new Map<number, number>();
-
-  leafOrder.forEach((matchNumber, index) => {
-    positions.set(matchNumber, index * (MATCH_CARD_HEIGHT + MATCH_CARD_GAP));
-  });
-
-  const derivePositions = (matchNumbers: readonly number[]) => {
-    matchNumbers.forEach((matchNumber) => {
-      const pair = BRACKET_PAIRINGS[matchNumber];
-      if (!pair) return;
-      const a = positions.get(pair[0]);
-      const b = positions.get(pair[1]);
-      if (a == null || b == null) return;
-      positions.set(matchNumber, (a + b) / 2);
-    });
-  };
-
-  rounds.forEach((round) => derivePositions(round));
-  return positions;
-}
-
-const LEFT_POSITIONS = buildSidePositions(LEFT_R32_ORDER, [
-  LEFT_R16_ORDER,
-  LEFT_QF_ORDER,
-  LEFT_SF_ORDER,
-]);
-const RIGHT_POSITIONS = buildSidePositions(RIGHT_R32_ORDER, [
-  RIGHT_R16_ORDER,
-  RIGHT_QF_ORDER,
-  RIGHT_SF_ORDER,
-]);
-const BRACKET_POSITIONS = new Map<number, number>([
-  ...LEFT_POSITIONS.entries(),
-  ...RIGHT_POSITIONS.entries(),
-]);
-const FINAL_TOP =
-  ((BRACKET_POSITIONS.get(101) ?? 0) + (BRACKET_POSITIONS.get(102) ?? 0)) / 2;
-const THIRD_PLACE_TOP = FINAL_TOP + MATCH_CARD_HEIGHT + MATCH_CARD_GAP + 28;
-const BRACKET_HEIGHT =
-  Math.max(...Array.from(BRACKET_POSITIONS.values()), FINAL_TOP, THIRD_PLACE_TOP, 0) +
-  MATCH_CARD_HEIGHT;
-
-type BracketConnector = {
-  key: string;
-  path: string;
-  isCompleted: boolean;
-  isLive: boolean;
-  isHighlighted: boolean;
-  isDimmed: boolean;
-};
-
-type ConnectorDirection = "left-to-right" | "right-to-left";
-
-const CHILD_TO_PARENTS = BRACKET_PAIRINGS;
-const PARENT_TO_CHILDREN = Object.entries(BRACKET_PAIRINGS).reduce<Record<number, number[]>>(
-  (acc, [child, parents]) => {
-    parents.forEach((parent) => {
-      acc[parent] ??= [];
-      acc[parent].push(Number(child));
-    });
-    return acc;
-  },
-  {},
-);
-
-function collectLineage(matchNumber: number) {
+function collectLineage(
+  matchNumber: number,
+  childToParents: Record<number, number[]>,
+  parentToChildren: Record<number, number[]>,
+) {
   const related = new Set<number>([matchNumber]);
   const queue = [matchNumber];
 
   while (queue.length > 0) {
     const current = queue.shift()!;
-    const parents = CHILD_TO_PARENTS[current] ?? [];
-    const children = PARENT_TO_CHILDREN[current] ?? [];
+    const parents = childToParents[current] ?? [];
+    const children = parentToChildren[current] ?? [];
 
     [...parents, ...children].forEach((next) => {
       if (related.has(next)) return;
@@ -276,24 +206,6 @@ function collectLineage(matchNumber: number) {
   }
 
   return related;
-}
-
-const CONNECTOR_SOURCES: Array<[number, [number, number]]> = [
-  ...Object.entries(BRACKET_PAIRINGS).map(([child, parents]) => [
-    Number(child),
-    parents as [number, number],
-  ]),
-  [104, [101, 102]],
-];
-
-function buildConnectorPath(startX: number, startY: number, endX: number, endY: number) {
-  const midX = (startX + endX) / 2;
-  return [
-    `M ${startX} ${startY}`,
-    `L ${midX} ${startY}`,
-    `L ${midX} ${endY}`,
-    `L ${endX} ${endY}`,
-  ].join(" ");
 }
 
 function BracketConnectorLayer({
@@ -328,7 +240,9 @@ function BracketConnectorLayer({
               ? "rgba(148, 163, 184, 0.16)"
               : "rgba(141, 220, 255, 0.42)"
           }
-          strokeWidth={connector.isHighlighted || connector.isLive ? 3 : connector.isCompleted ? 2.5 : 2}
+          strokeWidth={
+            connector.isHighlighted || connector.isLive ? 3 : connector.isCompleted ? 2.5 : 2
+          }
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
           className={connector.isLive ? "animate-pulse" : "transition-all duration-200"}
@@ -344,47 +258,140 @@ function BracketConnectorLayer({
   );
 }
 
-// Official FIFA World Cup 2026 knockout pairings.
-// Source: FIFA 2026 match schedule. Pairings are NOT sequential.
-function placeholdersFor(matchNumber: number): [string, string] {
-  if (matchNumber >= 73 && matchNumber <= 88) return ["TBD", "TBD"];
-  if (matchNumber === 104) return ["Winner SF1", "Winner SF2"];
-  if (matchNumber === 103) return ["Loser SF1", "Loser SF2"];
-  const pair = BRACKET_PAIRINGS[matchNumber];
-  if (!pair) return ["TBD", "TBD"];
-  const [a, b] = pair;
-  const px = bracketPrefixFor(a);
-  return [`Winner ${px} M${a}`, `Winner ${px} M${b}`];
-}
-
 function BracketPage() {
   const bracketScrollRef = useRef<HTMLDivElement | null>(null);
   const [connectorWidth, setConnectorWidth] = useState(0);
   const [connectors, setConnectors] = useState<BracketConnector[]>([]);
   const [hoveredMatch, setHoveredMatch] = useState<number | null>(null);
+  const [selected, setSelected] = useState<BracketMatch | null>(null);
 
-  const matchesQ = useQuery({
-    queryKey: ["matches", "all"],
-    queryFn: () => api.get<Match[]>("/api/matches"),
+  const bracketQ = useQuery({
+    queryKey: ["bracket"],
+    queryFn: () => api.get<BracketResponse>("/api/bracket"),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
 
+  const leftColumns = useMemo(
+    () => [
+      { key: "left-r32", title: "Round of 32", matches: bracketQ.data?.columns.left.r32 || [] },
+      { key: "left-r16", title: "Round of 16", matches: bracketQ.data?.columns.left.r16 || [] },
+      { key: "left-qf", title: "Quarter Finals", matches: bracketQ.data?.columns.left.qf || [] },
+      { key: "left-sf", title: "Semi Finals", matches: bracketQ.data?.columns.left.sf || [] },
+    ],
+    [bracketQ.data],
+  );
+  const rightColumns = useMemo(
+    () => [
+      { key: "right-sf", title: "Semi Finals", matches: bracketQ.data?.columns.right.sf || [] },
+      { key: "right-qf", title: "Quarter Finals", matches: bracketQ.data?.columns.right.qf || [] },
+      { key: "right-r16", title: "Round of 16", matches: bracketQ.data?.columns.right.r16 || [] },
+      { key: "right-r32", title: "Round of 32", matches: bracketQ.data?.columns.right.r32 || [] },
+    ],
+    [bracketQ.data],
+  );
+
   const byNumber = useMemo(() => {
-    const m = new Map<number, Match>();
-    (matchesQ.data || []).forEach((x) => {
-      if (x.matchNumber >= 73 && x.matchNumber <= 104) {
-        m.set(x.matchNumber, x);
+    const map = new Map<number, BracketMatch>();
+    (bracketQ.data?.matches || []).forEach((row) => map.set(row.matchNumber, row));
+    return map;
+  }, [bracketQ.data]);
+
+  const pairings = useMemo(() => {
+    const map: Record<number, [number, number]> = {};
+    (bracketQ.data?.matches || []).forEach((row) => {
+      const homeFrom = row.homeSeed?.fromMatchNumber;
+      const awayFrom = row.awaySeed?.fromMatchNumber;
+      if (homeFrom && awayFrom) {
+        map[row.matchNumber] = [homeFrom, awayFrom];
       }
     });
-    return m;
-  }, [matchesQ.data]);
+    return map;
+  }, [bracketQ.data]);
 
-  const thirdPlace = byNumber.get(103);
-  const [selected, setSelected] = useState<Match | null>(null);
+  const childToParents = pairings;
+  const parentToChildren = useMemo(
+    () =>
+      Object.entries(pairings).reduce<Record<number, number[]>>((acc, [child, parents]) => {
+        parents.forEach((parent) => {
+          acc[parent] ??= [];
+          acc[parent].push(Number(child));
+        });
+        return acc;
+      }, {}),
+    [pairings],
+  );
+
+  const leftR32Order = leftColumns[0].matches.map((match) => match.matchNumber);
+  const rightR32Order = rightColumns[3].matches.map((match) => match.matchNumber);
+  const leftR16Order = leftColumns[1].matches.map((match) => match.matchNumber);
+  const rightR16Order = rightColumns[2].matches.map((match) => match.matchNumber);
+  const leftQfOrder = leftColumns[2].matches.map((match) => match.matchNumber);
+  const rightQfOrder = rightColumns[1].matches.map((match) => match.matchNumber);
+  const leftSfOrder = leftColumns[3].matches.map((match) => match.matchNumber);
+  const rightSfOrder = rightColumns[0].matches.map((match) => match.matchNumber);
+
+  const buildSidePositions = (
+    leafOrder: readonly number[],
+    rounds: readonly (readonly number[])[],
+  ) => {
+    const positions = new Map<number, number>();
+
+    leafOrder.forEach((matchNumber, index) => {
+      positions.set(matchNumber, index * (MATCH_CARD_HEIGHT + MATCH_CARD_GAP));
+    });
+
+    rounds.forEach((round) => {
+      round.forEach((matchNumber) => {
+        const pair = pairings[matchNumber];
+        if (!pair) return;
+        const a = positions.get(pair[0]);
+        const b = positions.get(pair[1]);
+        if (a == null || b == null) return;
+        positions.set(matchNumber, (a + b) / 2);
+      });
+    });
+
+    return positions;
+  };
+
+  const leftPositions = useMemo(
+    () => buildSidePositions(leftR32Order, [leftR16Order, leftQfOrder, leftSfOrder]),
+    [leftR32Order.join(","), leftR16Order.join(","), leftQfOrder.join(","), leftSfOrder.join(","), bracketQ.data],
+  );
+  const rightPositions = useMemo(
+    () => buildSidePositions(rightR32Order, [rightR16Order, rightQfOrder, rightSfOrder]),
+    [rightR32Order.join(","), rightR16Order.join(","), rightQfOrder.join(","), rightSfOrder.join(","), bracketQ.data],
+  );
+  const bracketPositions = useMemo(
+    () => new Map<number, number>([...leftPositions.entries(), ...rightPositions.entries()]),
+    [leftPositions, rightPositions],
+  );
+  const finalMatch = bracketQ.data?.columns.center.final[0] || null;
+  const thirdPlace = bracketQ.data?.columns.center.third[0] || null;
+  const finalTop =
+    ((leftSfOrder[0] ? bracketPositions.get(leftSfOrder[0]) ?? 0 : 0) +
+      (rightSfOrder[0] ? bracketPositions.get(rightSfOrder[0]) ?? 0 : 0)) /
+    2;
+  const thirdPlaceTop = finalTop + MATCH_CARD_HEIGHT + MATCH_CARD_GAP + 28;
+  const bracketHeight =
+    Math.max(...Array.from(bracketPositions.values()), finalTop, thirdPlaceTop, 0) +
+    MATCH_CARD_HEIGHT;
+
   const hoveredLineage = useMemo(
-    () => (hoveredMatch == null ? null : collectLineage(hoveredMatch)),
-    [hoveredMatch],
+    () =>
+      hoveredMatch == null
+        ? null
+        : collectLineage(hoveredMatch, childToParents, parentToChildren),
+    [childToParents, hoveredMatch, parentToChildren],
+  );
+
+  const connectorSources = useMemo(
+    () =>
+      Object.entries(pairings)
+        .filter(([child]) => byNumber.get(Number(child))?.bracket.roundKey !== "third")
+        .map(([child, parents]) => [Number(child), parents as [number, number]]),
+    [byNumber, pairings],
   );
 
   useEffect(() => {
@@ -407,33 +414,30 @@ function BracketPage() {
       });
 
       const nextConnectors: BracketConnector[] = [];
+      const allColumns = [...leftColumns, ...rightColumns, { key: "final", matches: finalMatch ? [finalMatch] : [] }];
 
-      CONNECTOR_SOURCES.forEach(([child, parents]) => {
-        const childColumn = [...LEFT_COLUMNS, ...RIGHT_COLUMNS, { key: "final", matches: [104] }].find((column) =>
-          column.matches.includes(child),
+      connectorSources.forEach(([child, parents]) => {
+        const childColumn = allColumns.find((column) =>
+          column.matches.some((match) => match.matchNumber === child),
         );
         if (!childColumn) return;
-
         const childRect = columnRects.get(childColumn.key);
         if (!childRect) return;
 
         parents.forEach((parent) => {
-          const parentColumn = [...LEFT_COLUMNS, ...RIGHT_COLUMNS].find((column) =>
-            column.matches.includes(parent),
+          const parentColumn = [...leftColumns, ...rightColumns].find((column) =>
+            column.matches.some((match) => match.matchNumber === parent),
           );
           if (!parentColumn) return;
 
           const parentRect = columnRects.get(parentColumn.key);
-          const parentTop = BRACKET_POSITIONS.get(parent);
-          const childTop = child === 104 ? FINAL_TOP : BRACKET_POSITIONS.get(child);
+          const parentTop = bracketPositions.get(parent);
+          const childTop = child === finalMatch?.matchNumber ? finalTop : bracketPositions.get(child);
           const parentMatch = byNumber.get(parent);
           const childMatch = byNumber.get(child);
           if (!parentRect || parentTop == null || childTop == null) return;
 
-          const direction: ConnectorDirection = parentColumn.key.startsWith("right")
-            ? "right-to-left"
-            : "left-to-right";
-
+          const direction = parentColumn.key.startsWith("right") ? "right-to-left" : "left-to-right";
           const startX =
             direction === "left-to-right"
               ? parentRect.right + CONNECTOR_OFFSET
@@ -445,12 +449,7 @@ function BracketPage() {
 
           nextConnectors.push({
             key: `${parent}-${child}`,
-            path: buildConnectorPath(
-              startX,
-              parentTop + MATCH_CENTER_Y,
-              endX,
-              childTop + MATCH_CENTER_Y,
-            ),
+            path: buildConnectorPath(startX, parentTop + MATCH_CENTER_Y, endX, childTop + MATCH_CENTER_Y),
             isCompleted: parentMatch?.status === "completed",
             isLive: parentMatch?.status === "live" || childMatch?.status === "live",
             isHighlighted:
@@ -477,7 +476,7 @@ function BracketPage() {
       observer.disconnect();
       window.removeEventListener("resize", rebuild);
     };
-  }, [byNumber, hoveredLineage]);
+  }, [bracketPositions, connectorSources, finalMatch, finalTop, hoveredLineage, leftColumns, rightColumns, byNumber]);
 
   return (
     <SectionReveal delay={0.08} className="mx-auto max-w-[1400px] px-4 py-10 sm:px-6">
@@ -494,77 +493,96 @@ function BracketPage() {
         </div>
       </div>
 
-      {matchesQ.isLoading ? (
+      {bracketQ.isLoading ? (
         <div className="rounded-xl border border-white/10 bg-white/5 p-8 text-center text-sm text-white/60">
           Loading bracket…
         </div>
       ) : (
-        <>
-          {/* Horizontal scroller; bracket lays out as columns */}
-          <div className="-mx-4 overflow-x-auto pb-4 sm:mx-0">
-            <div
-              ref={bracketScrollRef}
-              className="relative min-w-[1460px] px-4 sm:px-0"
-              style={{ minHeight: BRACKET_HEIGHT }}
-            >
-              <BracketConnectorLayer
-                width={connectorWidth}
-                height={BRACKET_HEIGHT}
-                connectors={connectors}
+        <div className="-mx-4 overflow-x-auto pb-4 sm:mx-0">
+          <div
+            ref={bracketScrollRef}
+            className="relative min-w-[1460px] px-4 sm:px-0"
+            style={{ minHeight: bracketHeight }}
+          >
+            <BracketConnectorLayer
+              width={connectorWidth}
+              height={bracketHeight}
+              connectors={connectors}
+            />
+            <div className="relative z-10 flex items-start gap-8">
+              <BracketHalf
+                columns={leftColumns}
+                positions={bracketPositions}
+                height={bracketHeight}
+                hoveredLineage={hoveredLineage}
+                onHoverChange={setHoveredMatch}
+                onSelect={setSelected}
               />
-              <div className="relative z-10 flex items-start gap-8">
-                <BracketHalf
-                  columns={LEFT_COLUMNS}
-                  byNumber={byNumber}
-                  hoveredLineage={hoveredLineage}
-                  onHoverChange={setHoveredMatch}
-                  onSelect={setSelected}
-                />
-                <div
-                  data-bracket-column="final"
-                  className="flex flex-col"
-                  style={{ minWidth: FINAL_COLUMN_MIN_WIDTH }}
-                >
-                  <div className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
-                    Final
+              <div
+                data-bracket-column="final"
+                className="flex flex-col"
+                style={{ minWidth: FINAL_COLUMN_MIN_WIDTH }}
+              >
+                <div className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
+                  Final
+                </div>
+                <div className="relative" style={{ height: bracketHeight }}>
+                  <div className="absolute inset-x-0" style={{ top: finalTop }}>
+                    <MatchCell
+                      match={finalMatch || undefined}
+                      placeholders={[
+                        finalMatch?.homePlaceholder || "TBD",
+                        finalMatch?.awayPlaceholder || "TBD",
+                      ]}
+                      onClick={finalMatch ? () => setSelected(finalMatch) : undefined}
+                      onHoverChange={(hovered) =>
+                        setHoveredMatch(hovered && finalMatch ? finalMatch.matchNumber : null)
+                      }
+                      isHighlighted={finalMatch ? hoveredLineage?.has(finalMatch.matchNumber) ?? false : false}
+                      isDimmed={
+                        finalMatch
+                          ? hoveredLineage != null &&
+                            !(hoveredLineage?.has(finalMatch.matchNumber) ?? false)
+                          : false
+                      }
+                    />
                   </div>
-                  <div className="relative" style={{ height: BRACKET_HEIGHT }}>
-                    <div className="absolute inset-x-0" style={{ top: FINAL_TOP }}>
-                      <MatchCell
-                        match={byNumber.get(104)}
-                        placeholders={placeholdersFor(104)}
-                        onClick={byNumber.get(104) ? () => setSelected(byNumber.get(104) ?? null) : undefined}
-                        onHoverChange={(hovered) => setHoveredMatch(hovered ? 104 : null)}
-                        isHighlighted={hoveredLineage?.has(104) ?? false}
-                        isDimmed={hoveredLineage != null && !(hoveredLineage?.has(104) ?? false)}
-                      />
+                  <div className="absolute inset-x-0" style={{ top: thirdPlaceTop }}>
+                    <div className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
+                      Third Place
                     </div>
-                    <div className="absolute inset-x-0" style={{ top: THIRD_PLACE_TOP }}>
-                      <div className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45">
-                        Third Place
-                      </div>
-                      <MatchCell
-                        match={thirdPlace}
-                        placeholders={placeholdersFor(103)}
-                        onClick={thirdPlace ? () => setSelected(thirdPlace) : undefined}
-                        onHoverChange={(hovered) => setHoveredMatch(hovered ? 103 : null)}
-                        isHighlighted={hoveredLineage?.has(103) ?? false}
-                        isDimmed={hoveredLineage != null && !(hoveredLineage?.has(103) ?? false)}
-                      />
-                    </div>
+                    <MatchCell
+                      match={thirdPlace || undefined}
+                      placeholders={[
+                        thirdPlace?.homePlaceholder || "TBD",
+                        thirdPlace?.awayPlaceholder || "TBD",
+                      ]}
+                      onClick={thirdPlace ? () => setSelected(thirdPlace) : undefined}
+                      onHoverChange={(hovered) =>
+                        setHoveredMatch(hovered && thirdPlace ? thirdPlace.matchNumber : null)
+                      }
+                      isHighlighted={thirdPlace ? hoveredLineage?.has(thirdPlace.matchNumber) ?? false : false}
+                      isDimmed={
+                        thirdPlace
+                          ? hoveredLineage != null &&
+                            !(hoveredLineage?.has(thirdPlace.matchNumber) ?? false)
+                          : false
+                      }
+                    />
                   </div>
                 </div>
-                <BracketHalf
-                  columns={RIGHT_COLUMNS}
-                  byNumber={byNumber}
-                  hoveredLineage={hoveredLineage}
-                  onHoverChange={setHoveredMatch}
-                  onSelect={setSelected}
-                />
               </div>
+              <BracketHalf
+                columns={rightColumns}
+                positions={bracketPositions}
+                height={bracketHeight}
+                hoveredLineage={hoveredLineage}
+                onHoverChange={setHoveredMatch}
+                onSelect={setSelected}
+              />
             </div>
           </div>
-        </>
+        </div>
       )}
 
       <MatchDetailsDialog match={selected} onClose={() => setSelected(null)} />
@@ -574,16 +592,18 @@ function BracketPage() {
 
 function BracketHalf({
   columns,
-  byNumber,
+  positions,
+  height,
   hoveredLineage,
   onHoverChange,
   onSelect,
 }: {
-  columns: ReadonlyArray<{ key: string; title: string; matches: number[] }>;
-  byNumber: Map<number, Match>;
+  columns: ReadonlyArray<{ key: string; title: string; matches: BracketMatch[] }>;
+  positions: Map<number, number>;
+  height: number;
   hoveredLineage: Set<number> | null;
   onHoverChange: (matchNumber: number | null) => void;
-  onSelect: (match: Match | null) => void;
+  onSelect: (match: BracketMatch | null) => void;
 }) {
   return (
     <div className="flex gap-4 sm:gap-6">
@@ -597,22 +617,23 @@ function BracketHalf({
           <div className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
             {col.title}
           </div>
-          <div className="relative" style={{ height: BRACKET_HEIGHT }}>
-            {col.matches.map((n) => {
-              const mm = byNumber.get(n);
-              const isHighlighted = hoveredLineage?.has(n) ?? false;
+          <div className="relative" style={{ height }}>
+            {col.matches.map((match) => {
+              const isHighlighted = hoveredLineage?.has(match.matchNumber) ?? false;
               const isDimmed = hoveredLineage != null && !isHighlighted;
               return (
                 <div
-                  key={n}
+                  key={match.matchNumber}
                   className="absolute inset-x-0"
-                  style={{ top: BRACKET_POSITIONS.get(n) ?? 0 }}
+                  style={{ top: positions.get(match.matchNumber) ?? 0 }}
                 >
                   <MatchCell
-                    match={mm}
-                    placeholders={placeholdersFor(n)}
-                    onClick={mm ? () => onSelect(mm) : undefined}
-                    onHoverChange={(hovered) => onHoverChange(hovered ? n : null)}
+                    match={match}
+                    placeholders={[match.homePlaceholder, match.awayPlaceholder]}
+                    onClick={() => onSelect(match)}
+                    onHoverChange={(hovered) =>
+                      onHoverChange(hovered ? match.matchNumber : null)
+                    }
                     isHighlighted={isHighlighted}
                     isDimmed={isDimmed}
                   />
@@ -630,7 +651,7 @@ function MatchDetailsDialog({
   match,
   onClose,
 }: {
-  match: Match | null;
+  match: BracketMatch | null;
   onClose: () => void;
 }) {
   const open = !!match;
@@ -647,7 +668,7 @@ function MatchDetailsDialog({
           </DialogTitle>
           <DialogDescription className="text-xs text-white/60">
             {match?.status === "live"
-              ? `LIVE${match.liveMinute ? ` · ${match.liveMinute}'` : ""}`
+              ? "LIVE"
               : match?.status === "completed"
               ? "Full time"
               : match?.status
@@ -661,22 +682,17 @@ function MatchDetailsDialog({
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
               <TeamBlock team={match.homeTeam} highlight={homeWin} dim={awayWin} align="left" />
               <div className="text-center">
-              <div className="text-2xl font-black tabular-nums">
-                {typeof match.homeScore === "number" ? match.homeScore : "–"}
-                <span className="mx-2 text-white/30">:</span>
-                {typeof match.awayScore === "number" ? match.awayScore : "–"}
-              </div>
-              {typeof match.homePenaltyScore === "number" &&
-              typeof match.awayPenaltyScore === "number" ? (
-                <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
-                  Pens {match.homePenaltyScore} - {match.awayPenaltyScore}
+                <div className="text-2xl font-black tabular-nums">
+                  {typeof match.homeScore === "number" ? match.homeScore : "–"}
+                  <span className="mx-2 text-white/30">:</span>
+                  {typeof match.awayScore === "number" ? match.awayScore : "–"}
                 </div>
-              ) : null}
-              {match.isDraw && (
-                <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
-                  Draw
-                </div>
-                )}
+                {typeof match.homePenaltyScore === "number" &&
+                typeof match.awayPenaltyScore === "number" ? (
+                  <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
+                    Pens {match.homePenaltyScore} - {match.awayPenaltyScore}
+                  </div>
+                ) : null}
               </div>
               <TeamBlock team={match.awayTeam} highlight={awayWin} dim={homeWin} align="right" />
             </div>
@@ -684,17 +700,12 @@ function MatchDetailsDialog({
             <div className="space-y-2 text-sm text-white/70">
               <div className="flex items-center gap-2">
                 <Calendar className="size-4 text-white/40" />
-                {new Date(match.date).toLocaleDateString(undefined, {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
+                {formatMatchDate(match.date, match.time, "ddd, MMM D, YYYY")}
               </div>
               {match.time && (
                 <div className="flex items-center gap-2">
                   <Clock className="size-4 text-white/40" />
-                  {match.time}
+                  {formatMatchTime(match.date, match.time)}
                 </div>
               )}
               {(match.stadium || match.city) && (
@@ -703,22 +714,8 @@ function MatchDetailsDialog({
                   {[match.stadium, match.city].filter(Boolean).join(", ")}
                 </div>
               )}
-              {match.group && (
-                <div className="text-xs text-white/50">Group {match.group}</div>
-              )}
+              {match.group && <div className="text-xs text-white/50">Group {match.group}</div>}
             </div>
-
-            {match.notes && (
-              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs text-white/70">
-                {match.notes}
-              </div>
-            )}
-
-            {!completed && match.status !== "live" && (
-              <div className="text-xs text-white/50">
-                Result not available yet.
-              </div>
-            )}
           </div>
         )}
       </DialogContent>
@@ -760,11 +757,6 @@ function TeamBlock({
         >
           {team?.name || "TBD"}
         </div>
-        {highlight && (
-          <div className="text-[10px] uppercase tracking-wider text-primary">
-            Winner
-          </div>
-        )}
       </div>
     </div>
   );

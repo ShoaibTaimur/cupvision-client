@@ -1,6 +1,6 @@
 import { Match, Team } from "@/lib/api";
 import { Calendar, Clock, MapPin } from "lucide-react";
-import { formatDate, formatTime } from "@/lib/date";
+import { formatMatchDate, formatMatchTime } from "@/lib/date";
 
 const STATUS_STYLES: Record<string, string> = {
   scheduled: "bg-secondary text-secondary-foreground border border-white/5",
@@ -86,10 +86,10 @@ function DateTimePill({ date, time }: { date: string; time: string }) {
   return (
     <div className="inline-flex items-center gap-1.5 rounded-full bg-secondary/50 border border-white/5 px-2.5 py-1 text-[10px] font-semibold text-muted-foreground shadow-sm">
       <Calendar className="size-3 text-primary/70" />
-      <span>{formatDate(date)}</span>
+      <span>{formatMatchDate(date, time)}</span>
       <span className="size-1 rounded-full bg-white/20" />
       <Clock className="size-3 text-accent/70" />
-      <span>{formatTime(time)}</span>
+      <span>{formatMatchTime(date, time)}</span>
     </div>
   );
 }

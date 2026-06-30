@@ -5,6 +5,7 @@ import { clearToken, getToken } from "@/lib/api";
 import {
   LayoutDashboard,
   Calendar,
+  GitBranch,
   Users,
   UserCog,
   Upload,
@@ -21,6 +22,7 @@ import {
 const NAV = [
   { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/admin/matches", label: "Matches", icon: Calendar },
+  { to: "/admin/bracket", label: "Bracket Config", icon: GitBranch },
   { to: "/admin/channels", label: "Channels", icon: Radio },
   { to: "/admin/teams", label: "Teams", icon: Users },
   { to: "/admin/authors", label: "Authors", icon: UserCog },

@@ -5,7 +5,7 @@ import { api, Match } from "@/lib/api";
 import { MatchCard } from "@/components/match-card";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, MatchCardSkeleton } from "@/components/skeleton";
-import { formatDate } from "@/lib/date";
+import { formatMatchDate, getMatchDayKey, getMatchTimestamp } from "@/lib/date";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/timeline")({
@@ -45,11 +45,15 @@ function TimelinePage() {
         if (filter === "finished") return m.status === "completed";
         return true;
       })
-      .sort((a, b) => `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`));
+      .sort(
+        (a, b) =>
+          (getMatchTimestamp(a.date, a.time) ?? 0) - (getMatchTimestamp(b.date, b.time) ?? 0),
+      );
     const map = new Map<string, Match[]>();
     for (const m of list) {
-      if (!map.has(m.date)) map.set(m.date, []);
-      map.get(m.date)!.push(m);
+      const dayKey = getMatchDayKey(m.date, m.time);
+      if (!map.has(dayKey)) map.set(dayKey, []);
+      map.get(dayKey)!.push(m);
     }
     return Array.from(map.entries());
   }, [matches.data, filter]);
@@ -95,7 +99,7 @@ function TimelinePage() {
             <div key={date} className="relative">
               <div className="absolute -left-[31px] top-1 size-3 rounded-full bg-primary ring-4 ring-background" />
               <div className="text-sm font-semibold mb-3">
-                {formatDate(date, "dddd, MMMM D, YYYY")}
+                {formatMatchDate(date, "00:00", "dddd, MMMM D, YYYY")}
               </div>
               <div className="grid md:grid-cols-2 gap-3">
                 {items.map((m) => (

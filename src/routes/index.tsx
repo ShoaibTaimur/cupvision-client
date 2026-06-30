@@ -14,7 +14,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import { formatDate, formatTime } from "@/lib/date";
+import { formatMatchDate, formatMatchTime, getMatchTimestamp } from "@/lib/date";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,14 +34,14 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-function useCountdown(target?: string) {
+function useCountdown(targetMs?: number | null) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  if (!target) return null;
-  const diff = new Date(target).getTime() - now;
+  if (!targetMs) return null;
+  const diff = targetMs - now;
   if (diff <= 0) return null;
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
@@ -99,7 +99,7 @@ function Home() {
     liveCountRef.current = liveMatches.length;
   }, [liveMatches.length, liveQuery.isSuccess, qc]);
 
-  const cd = useCountdown(upcoming ? `${upcoming.date}T${upcoming.time}:00` : undefined);
+  const cd = useCountdown(upcoming ? getMatchTimestamp(upcoming.date, upcoming.time) : null);
 
   // When the upcoming countdown reaches zero, refetch summary so the server
   // can auto-promote the match from "scheduled" to "live".
@@ -208,7 +208,10 @@ function Home() {
                   <span>{upcoming?.stadium || "Venue TBA"}</span>
                   <span>
                     {upcoming
-                      ? `${formatDate(upcoming.date)} · ${formatTime(upcoming.time)}`
+                      ? `${formatMatchDate(upcoming.date, upcoming.time)} · ${formatMatchTime(
+                          upcoming.date,
+                          upcoming.time,
+                        )}`
                       : "Awaiting update"}
                   </span>
                 </div>
