@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { AdminShell } from "@/components/admin-shell";
-import { api, HealScoresResult, MatchAdvance, MatchConfig, MatchConfigSyncResult, MatchSeed, Team } from "@/lib/api";
+import { api, HealScoresResult, MatchAdvance, Bracket, BracketSyncResult, MatchSeed, Team } from "@/lib/api";
 import { Skeleton } from "@/components/skeleton";
 import { toast } from "sonner";
 import { Field } from "./admin.teams";
@@ -34,15 +34,15 @@ function BracketAdmin() {
 
   const [selected, setSelected] = useState<number | null>(null);
   const configs = useQuery({
-    queryKey: ["match-configs"],
-    queryFn: () => api.authed<MatchConfig[]>("/api/match-configs"),
+    queryKey: ["brackets"],
+    queryFn: () => api.authed<Bracket[]>("/api/brackets"),
   });
   const teams = useQuery({ queryKey: ["teams"], queryFn: () => api.get<Team[]>("/api/teams") });
   const activeConfig = useMemo(
     () => configs.data?.find((row) => row.matchNumber === selected) || null,
     [configs.data, selected],
   );
-  const [form, setForm] = useState<MatchConfig | null>(null);
+  const [form, setForm] = useState<Bracket | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const list = useMemo(() => {
@@ -54,11 +54,11 @@ function BracketAdmin() {
   const save = useMutation({
     mutationFn: async () => {
       if (!form) return;
-      return api.put(`/api/match-configs/${form.matchNumber}`, form);
+      return api.put(`/api/brackets/${form.matchNumber}`, form);
     },
     onSuccess: () => {
       toast.success("Saved");
-      qc.invalidateQueries({ queryKey: ["match-configs"] });
+      qc.invalidateQueries({ queryKey: ["brackets"] });
       qc.invalidateQueries({ queryKey: ["admin-matches"] });
       qc.invalidateQueries({ queryKey: ["bracket"] });
       setIsModalOpen(false);
@@ -68,10 +68,10 @@ function BracketAdmin() {
     onError: (e: any) => toast.error(e.message),
   });
   const syncFifa = useMutation({
-    mutationFn: () => api.post<MatchConfigSyncResult>("/api/match-configs/sync-fifa", {}, true),
+    mutationFn: () => api.post<BracketSyncResult>("/api/brackets/sync-fifa", {}, true),
     onSuccess: (data) => {
       toast.success(`FIFA sync ok: ${data.synced} cfg`);
-      qc.invalidateQueries({ queryKey: ["match-configs"] });
+      qc.invalidateQueries({ queryKey: ["brackets"] });
       qc.invalidateQueries({ queryKey: ["admin-matches"] });
       qc.invalidateQueries({ queryKey: ["bracket"] });
       if (selected != null) {
@@ -82,10 +82,10 @@ function BracketAdmin() {
     onError: (e: any) => toast.error(e.message),
   });
   const healScores = useMutation({
-    mutationFn: () => api.post<HealScoresResult>("/api/match-configs/heal-scores", {}, true),
+    mutationFn: () => api.post<HealScoresResult>("/api/brackets/heal-scores", {}, true),
     onSuccess: (data) => {
       toast.success(`Healed ${data.updated} scores`);
-      qc.invalidateQueries({ queryKey: ["match-configs"] });
+      qc.invalidateQueries({ queryKey: ["brackets"] });
       qc.invalidateQueries({ queryKey: ["admin-matches"] });
       qc.invalidateQueries({ queryKey: ["bracket"] });
       if (data.errors.length) {
@@ -107,7 +107,7 @@ function BracketAdmin() {
           current: number;
           total: number;
           message: string;
-        }>("/api/match-configs/heal-progress");
+        }>("/api/brackets/heal-progress");
         setHealProgressData(res);
       } catch (err) {
         // ignore
@@ -116,9 +116,9 @@ function BracketAdmin() {
     return () => clearInterval(interval);
   }, [healScores.isPending]);
 
-  const startEdit = (config: MatchConfig) => {
+  const startEdit = (config: Bracket) => {
     setSelected(config.matchNumber);
-    const next = JSON.parse(JSON.stringify(config)) as MatchConfig;
+    const next = JSON.parse(JSON.stringify(config)) as Bracket;
     next.group = next.group || "";
     next.date = getFormDate(next.date);
     next.time = getFormTime(config.date, next.time);
@@ -455,7 +455,7 @@ function BracketAdmin() {
                           ...form,
                           bracket: {
                             enabled: form.bracket?.enabled || false,
-                            roundKey: value as NonNullable<MatchConfig["bracket"]>["roundKey"],
+                            roundKey: value as NonNullable<Bracket["bracket"]>["roundKey"],
                             side: form.bracket?.side || "left",
                             order: form.bracket?.order || 0,
                           },
@@ -482,7 +482,7 @@ function BracketAdmin() {
                           bracket: {
                             enabled: form.bracket?.enabled || false,
                             roundKey: form.bracket?.roundKey || "r32",
-                            side: value as NonNullable<MatchConfig["bracket"]>["side"],
+                            side: value as NonNullable<Bracket["bracket"]>["side"],
                             order: form.bracket?.order || 0,
                           },
                         })

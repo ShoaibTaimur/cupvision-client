@@ -112,7 +112,7 @@ export interface MatchBracketPlacement {
   side: "left" | "right" | "center";
   order: number;
 }
-export interface MatchConfig {
+export interface Bracket {
   _id?: string;
   matchNumber: number;
   stage: string;
@@ -131,7 +131,7 @@ export interface MatchConfig {
   homePlaceholder?: string;
   awayPlaceholder?: string;
 }
-export interface MatchConfigSyncResult {
+export interface BracketSyncResult {
   ok: boolean;
   seasonId: string;
   language: string;
