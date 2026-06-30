@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { api, Match, Team } from "@/lib/api";
+import { BRACKET_COLUMNS, BRACKET_PAIRINGS, bracketPrefixFor } from "@/lib/bracket";
 import { SectionReveal } from "@/components/section-reveal";
 import { Trophy, MapPin, Calendar, Clock } from "lucide-react";
 import {
@@ -30,20 +31,6 @@ export const Route = createFileRoute("/bracket")({
   }),
   component: BracketPage,
 });
-
-type Column = {
-  key: string;
-  title: string;
-  range: [number, number];
-};
-
-const COLUMNS: Column[] = [
-  { key: "r32", title: "Round of 32", range: [73, 88] },
-  { key: "r16", title: "Round of 16", range: [89, 96] },
-  { key: "qf", title: "Quarter Finals", range: [97, 100] },
-  { key: "sf", title: "Semi Finals", range: [101, 102] },
-  { key: "final", title: "Final", range: [104, 104] },
-];
 
 function teamLabel(t?: Team | null, fallback = "TBD") {
   if (!t) return fallback;
@@ -165,43 +152,58 @@ function MatchCell({
   );
 }
 
-// Official FIFA World Cup 2026 knockout pairings.
-// Source: FIFA 2026 match schedule. Pairings are NOT sequential.
-const PAIRINGS: Record<number, [number, number]> = {
-  // Round of 16 (sources are R32 winners)
-  89: [73, 75],
-  90: [74, 77],
-  91: [76, 78],
-  92: [79, 80],
-  93: [83, 84],
-  94: [81, 82],
-  95: [86, 88],
-  96: [85, 87],
-  // Quarter-finals (sources are R16 winners)
-  97: [89, 90],
-  98: [93, 94],
-  99: [91, 92],
-  100: [95, 96],
-  // Semi-finals (sources are QF winners)
-  101: [97, 98],
-  102: [99, 100],
-};
+const MATCH_CARD_HEIGHT = 120;
+const MATCH_CARD_GAP = 28;
 
-function prefixFor(srcMatchNumber: number): string {
-  if (srcMatchNumber >= 73 && srcMatchNumber <= 88) return "R32";
-  if (srcMatchNumber >= 89 && srcMatchNumber <= 96) return "R16";
-  if (srcMatchNumber >= 97 && srcMatchNumber <= 100) return "QF";
-  return "";
+function buildBracketPositions() {
+  const positions = new Map<number, number>();
+  const r32Column = BRACKET_COLUMNS.find((column) => column.key === "r32");
+  const r32Matches = r32Column ? [...r32Column.matches] : [];
+
+  r32Matches.forEach((matchNumber, index) => {
+    positions.set(matchNumber, index * (MATCH_CARD_HEIGHT + MATCH_CARD_GAP));
+  });
+
+  const derivePositions = (key: string) => {
+    const column = BRACKET_COLUMNS.find((item) => item.key === key);
+    if (!column) return;
+    column.matches.forEach((matchNumber) => {
+      const pair = BRACKET_PAIRINGS[matchNumber];
+      if (!pair) return;
+      const a = positions.get(pair[0]);
+      const b = positions.get(pair[1]);
+      if (a == null || b == null) return;
+      positions.set(matchNumber, (a + b) / 2);
+    });
+  };
+
+  derivePositions("r16");
+  derivePositions("qf");
+  derivePositions("sf");
+
+  const sf1 = positions.get(101);
+  const sf2 = positions.get(102);
+  if (sf1 != null && sf2 != null) {
+    positions.set(104, (sf1 + sf2) / 2);
+  }
+
+  return positions;
 }
 
+const BRACKET_POSITIONS = buildBracketPositions();
+const BRACKET_HEIGHT =
+  Math.max(...Array.from(BRACKET_POSITIONS.values()), 0) + MATCH_CARD_HEIGHT;
+
+// Official FIFA World Cup 2026 knockout pairings.
+// Source: FIFA 2026 match schedule. Pairings are NOT sequential.
 function placeholdersFor(matchNumber: number): [string, string] {
   if (matchNumber >= 73 && matchNumber <= 88) return ["TBD", "TBD"];
   if (matchNumber === 104) return ["Winner SF1", "Winner SF2"];
   if (matchNumber === 103) return ["Loser SF1", "Loser SF2"];
-  const pair = PAIRINGS[matchNumber];
+  const pair = BRACKET_PAIRINGS[matchNumber];
   if (!pair) return ["TBD", "TBD"];
   const [a, b] = pair;
-  const px = prefixFor(a);
+  const px = bracketPrefixFor(a);
   return [`Winner ${px} M${a}`, `Winner ${px} M${b}`];
 }
 
@@ -251,10 +253,7 @@ function BracketPage() {
           {/* Horizontal scroller; bracket lays out as columns */}
           <div className="-mx-4 overflow-x-auto pb-4 sm:mx-0">
             <div className="flex min-w-[920px] gap-4 px-4 sm:min-w-[1100px] sm:gap-6 sm:px-0 lg:min-w-0">
-              {COLUMNS.map((col) => {
-                const [start, end] = col.range;
-                const nums: number[] = [];
-                for (let n = start; n <= end; n++) nums.push(n);
+              {BRACKET_COLUMNS.map((col) => {
                 return (
                   <div
                     key={col.key}
@@ -264,16 +263,21 @@ function BracketPage() {
                     <div className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-white/60">
                       {col.title}
                     </div>
-                    <div className="flex flex-1 flex-col justify-around gap-3">
-                      {nums.map((n) => {
+                    <div className="relative" style={{ height: BRACKET_HEIGHT }}>
+                      {col.matches.map((n) => {
                         const mm = byNumber.get(n);
                         return (
-                          <MatchCell
+                          <div
                             key={n}
-                            match={mm}
-                            placeholders={placeholdersFor(n)}
-                            onClick={mm ? () => setSelected(mm) : undefined}
-                          />
+                            className="absolute inset-x-0"
+                            style={{ top: BRACKET_POSITIONS.get(n) ?? 0 }}
+                          >
+                            <MatchCell
+                              match={mm}
+                              placeholders={placeholdersFor(n)}
+                              onClick={mm ? () => setSelected(mm) : undefined}
+                            />
+                          </div>
                         );
                       })}
                     </div>
