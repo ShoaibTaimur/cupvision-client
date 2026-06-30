@@ -38,10 +38,18 @@ export function StatusBadge({
   );
 }
 
-function TeamFlag({ team }: { team?: Team | null }) {
+export function TeamFlag({
+  team,
+  className = "size-6",
+}: {
+  team?: Team | null;
+  className?: string;
+}) {
   if (!team) {
     return (
-      <div className="size-6 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-muted-foreground select-none">
+      <div
+        className={`${className} shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold text-muted-foreground select-none`}
+      >
         ?
       </div>
     );
@@ -49,7 +57,9 @@ function TeamFlag({ team }: { team?: Team | null }) {
   const flag = team.flag?.trim();
   if (!flag) {
     return (
-      <div className="size-6 shrink-0 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-bold text-primary select-none uppercase">
+      <div
+        className={`${className} shrink-0 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-bold text-primary select-none uppercase`}
+      >
         {team.name ? team.name[0] : "?"}
       </div>
     );
@@ -59,7 +69,7 @@ function TeamFlag({ team }: { team?: Team | null }) {
     return (
       <img
         src={flag}
-        className="size-6 shrink-0 object-cover rounded-full border border-white/10 shadow-sm"
+        className={`${className} shrink-0 object-cover rounded-full border border-white/10 shadow-sm`}
         alt={team.name}
       />
     );

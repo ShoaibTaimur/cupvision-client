@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { api, Match, Standing, Team } from "@/lib/api";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, TableRowSkeleton, MatchCardSkeleton } from "@/components/skeleton";
-import { MatchCard } from "@/components/match-card";
+import { MatchCard, TeamFlag } from "@/components/match-card";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -106,12 +106,17 @@ function ScoreboardPage() {
                 >
                   <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
                   <TableCell className="font-medium">
-                    {s.team.name}
-                    {s.team.group && (
-                      <span className="ml-2 text-[10px] text-muted-foreground">
-                        Group {s.team.group}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-3">
+                      <TeamFlag team={s.team} />
+                      <div className="min-w-0">
+                        <div className="truncate">{s.team.name}</div>
+                        {s.team.group && (
+                          <span className="text-[10px] text-muted-foreground">
+                            Group {s.team.group}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="text-right tabular-nums">{s.played}</TableCell>
                   <TableCell className="text-right tabular-nums">{s.wins}</TableCell>
@@ -192,11 +197,18 @@ function TeamModal({ teamId, onClose }: { teamId: string; onClose: () => void })
       >
         <div className="p-5 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="text-xl font-bold">
-              {team.isLoading ? <Skeleton className="h-6 w-32" /> : team.data?.name || "Team"}
-            </h3>
-            {!team.isLoading && team.data?.group && (
-              <p className="text-xs text-muted-foreground">Group {team.data.group}</p>
+            {team.isLoading ? (
+              <Skeleton className="h-6 w-32" />
+            ) : (
+              <div className="flex items-center gap-3">
+                <TeamFlag team={team.data} className="size-8" />
+                <div>
+                  <h3 className="text-xl font-bold">{team.data?.name || "Team"}</h3>
+                  {team.data?.group && (
+                    <p className="text-xs text-muted-foreground">Group {team.data.group}</p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
           <Button
