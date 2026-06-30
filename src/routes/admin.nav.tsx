@@ -29,6 +29,7 @@ const NAV_ITEMS: { to: string; label: string }[] = [
 interface Settings {
   liveScoreTrackingEnabled?: boolean;
   disabledNav?: Record<string, { message: string }>;
+  hiddenNav?: Record<string, boolean>;
 }
 
 function NavAdmin() {
@@ -38,15 +39,19 @@ function NavAdmin() {
     queryFn: () => api.get<Settings>("/api/settings"),
   });
 
-  const [state, setState] = useState<Record<string, { disabled: boolean; message: string }>>({});
+  const [state, setState] = useState<
+    Record<string, { disabled: boolean; hidden: boolean; message: string }>
+  >({});
 
   useEffect(() => {
     if (!settingsQ.data) return;
     const dn = settingsQ.data.disabledNav || {};
-    const next: Record<string, { disabled: boolean; message: string }> = {};
+    const hn = settingsQ.data.hiddenNav || {};
+    const next: Record<string, { disabled: boolean; hidden: boolean; message: string }> = {};
     for (const n of NAV_ITEMS) {
       next[n.to] = {
         disabled: !!dn[n.to],
+        hidden: !!hn[n.to],
         message: dn[n.to]?.message || "This section is temporarily unavailable.",
       };
     }
@@ -56,10 +61,12 @@ function NavAdmin() {
   const save = useMutation({
     mutationFn: async () => {
       const disabledNav: Record<string, { message: string }> = {};
+      const hiddenNav: Record<string, boolean> = {};
       for (const [to, v] of Object.entries(state)) {
         if (v.disabled) disabledNav[to] = { message: v.message };
+        if (v.hidden) hiddenNav[to] = true;
       }
-      return api.put("/api/settings", { disabledNav });
+      return api.put("/api/settings", { disabledNav, hiddenNav });
     },
     onSuccess: () => {
       toast.success("Navigation settings saved");
@@ -74,7 +81,7 @@ function NavAdmin() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Navigation</h1>
         <p className="text-sm text-muted-foreground">
-          Disable any public nav tab and set the message visitors see when they click it.
+          Control public tab access, click message, menu visibility.
         </p>
       </div>
 
@@ -83,30 +90,48 @@ function NavAdmin() {
       ) : (
         <div className="space-y-3 max-w-3xl">
           {NAV_ITEMS.map((n) => {
-            const v = state[n.to] || { disabled: false, message: "" };
+            const v = state[n.to] || { disabled: false, hidden: false, message: "" };
             return (
               <div
                 key={n.to}
                 className="bg-card border border-border rounded-lg p-4 flex flex-col gap-3 sm:flex-row sm:items-start"
               >
-                <div className="flex items-center gap-3 sm:w-44 shrink-0">
-                  <Switch
-                    checked={!v.disabled}
-                    onCheckedChange={(checked) =>
-                      setState((s) => ({
-                        ...s,
-                        [n.to]: { ...v, disabled: !checked },
-                      }))
-                    }
-                  />
+                <div className="sm:w-52 shrink-0">
                   <div>
                     <div className="font-medium">{n.label}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {v.disabled ? "Disabled" : "Enabled"}
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {v.disabled ? "Access off" : "Access on"} · {v.hidden ? "Menu hidden" : "Menu shown"}
                     </div>
                   </div>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 space-y-3">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+                      <Switch
+                        checked={!v.disabled}
+                        onCheckedChange={(checked) =>
+                          setState((s) => ({
+                            ...s,
+                            [n.to]: { ...v, disabled: !checked },
+                          }))
+                        }
+                      />
+                      <span>{v.disabled ? "Disabled" : "Enabled"}</span>
+                    </label>
+                    <Button
+                      type="button"
+                      variant={v.hidden ? "default" : "outline"}
+                      size="sm"
+                      onClick={() =>
+                        setState((s) => ({
+                          ...s,
+                          [n.to]: { ...v, hidden: !v.hidden },
+                        }))
+                      }
+                    >
+                      {v.hidden ? "Show in menu" : "Hide from menu"}
+                    </Button>
+                  </div>
                   <Input
                     disabled={!v.disabled}
                     placeholder="Message shown when this tab is clicked"

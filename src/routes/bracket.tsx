@@ -5,6 +5,7 @@ import { api, BracketMatch, BracketResponse, Team } from "@/lib/api";
 import { SectionReveal } from "@/components/section-reveal";
 import { Trophy, MapPin, Calendar, Clock } from "lucide-react";
 import { formatMatchDate, formatMatchTime } from "@/lib/date";
+import { formatScoreValue } from "@/lib/match-score";
 import {
   Dialog,
   DialogContent,
@@ -76,12 +77,14 @@ function Slot({
   isWinner,
   isLoser,
   score,
+  penaltyScore,
   placeholder,
 }: {
   team?: Team | null;
   isWinner: boolean;
   isLoser: boolean;
   score?: number;
+  penaltyScore?: number;
   placeholder: string;
 }) {
   return (
@@ -115,7 +118,7 @@ function Slot({
             isWinner ? "text-white" : isLoser ? "text-white/40" : "text-white/70"
           }`}
         >
-          {score}
+          {formatScoreValue(score, penaltyScore)}
         </span>
       ) : null}
     </div>
@@ -178,6 +181,7 @@ function MatchCell({
         isWinner={homeWin}
         isLoser={homeLose}
         score={match?.homeScore}
+        penaltyScore={match?.homePenaltyScore}
         placeholder={placeholders[0]}
       />
       <div className="h-px bg-white/5" />
@@ -186,6 +190,7 @@ function MatchCell({
         isWinner={awayWin}
         isLoser={awayLose}
         score={match?.awayScore}
+        penaltyScore={match?.awayPenaltyScore}
         placeholder={placeholders[1]}
       />
     </button>
@@ -721,16 +726,14 @@ function MatchDetailsDialog({
               <TeamBlock team={match.homeTeam} highlight={homeWin} dim={awayWin} align="left" />
               <div className="text-center">
                 <div className="text-2xl font-black tabular-nums">
-                  {typeof match.homeScore === "number" ? match.homeScore : "–"}
+                  {typeof match.homeScore === "number"
+                    ? formatScoreValue(match.homeScore, match.homePenaltyScore)
+                    : "–"}
                   <span className="mx-2 text-white/30">:</span>
-                  {typeof match.awayScore === "number" ? match.awayScore : "–"}
+                  {typeof match.awayScore === "number"
+                    ? formatScoreValue(match.awayScore, match.awayPenaltyScore)
+                    : "–"}
                 </div>
-                {typeof match.homePenaltyScore === "number" &&
-                typeof match.awayPenaltyScore === "number" ? (
-                  <div className="mt-1 text-[10px] uppercase tracking-wider text-white/50">
-                    Pens {match.homePenaltyScore} - {match.awayPenaltyScore}
-                  </div>
-                ) : null}
               </div>
               <TeamBlock team={match.awayTeam} highlight={awayWin} dim={homeWin} align="right" />
             </div>

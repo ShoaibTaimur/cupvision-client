@@ -26,6 +26,7 @@ const idleCls =
 
 interface SiteSettings {
   disabledNav?: Record<string, { message: string }>;
+  hiddenNav?: Record<string, boolean>;
 }
 
 function useSiteSettings() {
@@ -50,6 +51,8 @@ export function SiteHeader() {
   const [adminLoggedIn, setAdminLoggedIn] = useState(false);
   const settingsQ = useSiteSettings();
   const disabled = settingsQ.data?.disabledNav || {};
+  const hidden = settingsQ.data?.hiddenNav || {};
+  const visibleNav = NAV.filter((item) => !hidden[item.to]);
 
   useEffect(() => {
     const syncAdminState = () => setAdminLoggedIn(!!getToken());
@@ -122,7 +125,7 @@ export function SiteHeader() {
         <nav
           className={`hidden items-center gap-1 rounded-full p-1.5 transition-all duration-300 lg:flex ${scrolled ? "border border-white/10 bg-white/6 backdrop-blur-md" : "border border-transparent bg-transparent"}`}
         >
-          {NAV.map((n) => {
+          {visibleNav.map((n) => {
             const d = disabled[n.to];
             if (d) {
               return (
@@ -201,7 +204,7 @@ export function SiteHeader() {
                 </button>
               </div>
               <nav className="flex-1 space-y-1 p-3">
-                {NAV.map((n) => {
+                {visibleNav.map((n) => {
                   const d = disabled[n.to];
                   if (d) {
                     return (

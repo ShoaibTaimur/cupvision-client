@@ -1,6 +1,7 @@
 import { Match, Team } from "@/lib/api";
 import { Calendar, Clock, MapPin } from "lucide-react";
 import { formatMatchDate, formatMatchTime } from "@/lib/date";
+import { formatScoreValue } from "@/lib/match-score";
 
 const STATUS_STYLES: Record<string, string> = {
   scheduled: "bg-secondary text-secondary-foreground border border-white/5",
@@ -131,12 +132,12 @@ export function MatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
           </span>
           {completed && (
             <span className="ml-auto font-black text-xs tabular-nums text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
-              {m.homeScore ?? 0}
+              {formatScoreValue(m.homeScore, m.homePenaltyScore)}
             </span>
           )}
           {live && (
             <span className="ml-auto font-black text-xs tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-2 py-0.5 rounded-md animate-pulse">
-              {m.homeScore ?? 0}
+              {formatScoreValue(m.homeScore, m.homePenaltyScore)}
             </span>
           )}
         </div>
@@ -159,12 +160,12 @@ export function MatchCard({ m, onClick }: { m: Match; onClick?: () => void }) {
           </span>
           {completed && (
             <span className="ml-auto font-black text-xs tabular-nums text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
-              {m.awayScore ?? 0}
+              {formatScoreValue(m.awayScore, m.awayPenaltyScore)}
             </span>
           )}
           {live && (
             <span className="ml-auto font-black text-xs tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-2 py-0.5 rounded-md animate-pulse">
-              {m.awayScore ?? 0}
+              {formatScoreValue(m.awayScore, m.awayPenaltyScore)}
             </span>
           )}
         </div>
@@ -222,7 +223,7 @@ export function LiveMatchCard({ m, onClick }: { m: Match; onClick?: () => void }
             <TeamFlag team={m.homeTeam} />
             <span className="text-base font-black tracking-tight text-white truncate">{home}</span>
             <span className="ml-auto font-black text-lg tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-3 py-1 rounded-xl animate-pulse shadow-sm">
-              {m.homeScore ?? 0}
+              {formatScoreValue(m.homeScore, m.homePenaltyScore)}
             </span>
           </div>
 
@@ -239,7 +240,7 @@ export function LiveMatchCard({ m, onClick }: { m: Match; onClick?: () => void }
             <TeamFlag team={m.awayTeam} />
             <span className="text-base font-black tracking-tight text-white truncate">{away}</span>
             <span className="ml-auto font-black text-lg tabular-nums text-red-200 bg-red-500/15 border border-red-400/30 px-3 py-1 rounded-xl animate-pulse shadow-sm">
-              {m.awayScore ?? 0}
+              {formatScoreValue(m.awayScore, m.awayPenaltyScore)}
             </span>
           </div>
         </div>

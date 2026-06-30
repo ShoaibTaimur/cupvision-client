@@ -16,6 +16,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteFooter, SiteHeader } from "../components/site-chrome";
 import { ScrollTopButton } from "../components/scroll-top-button";
 import { DisabledRouteGuard } from "../components/disabled-route-guard";
+import { FloatingLiveBadge } from "../components/floating-live-badge";
 import { Toaster } from "sonner";
 
 // Inject Vercel Analytics
@@ -139,6 +140,7 @@ function RootComponent() {
           {isAdmin ? <Outlet /> : <DisabledRouteGuard><Outlet /></DisabledRouteGuard>}
         </main>
         {!isAdmin && <SiteFooter />}
+        {!isAdmin && <FloatingLiveBadge />}
         {!isAdmin && <ScrollTopButton />}
       </div>
       <Toaster theme="dark" position="top-right" richColors />

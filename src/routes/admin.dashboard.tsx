@@ -5,6 +5,7 @@ import { api, Match } from "@/lib/api";
 import { Skeleton } from "@/components/skeleton";
 import { TeamFlag, StatusBadge } from "@/components/match-card";
 import { formatMatchDate, formatMatchTime } from "@/lib/date";
+import { formatScoreValue } from "@/lib/match-score";
 import {
   Trophy,
   Calendar,
@@ -312,9 +313,9 @@ function Dashboard() {
                       <span className="font-bold text-sm truncate">{m.homeTeam?.name || "TBD"}</span>
                     </div>
                     <div className="flex items-center justify-center gap-2 px-3 py-1 bg-secondary/80 rounded-md text-base font-extrabold w-2/12">
-                      <span>{m.homeScore ?? 0}</span>
+                      <span>{formatScoreValue(m.homeScore, m.homePenaltyScore)}</span>
                       <span className="text-muted-foreground text-xs font-normal">:</span>
-                      <span>{m.awayScore ?? 0}</span>
+                      <span>{formatScoreValue(m.awayScore, m.awayPenaltyScore)}</span>
                     </div>
                     <div className="flex items-center justify-end gap-3 w-5/12">
                       <span className="font-bold text-sm truncate">{m.awayTeam?.name || "TBD"}</span>
@@ -387,9 +388,9 @@ function Dashboard() {
                         <span className="text-sm font-semibold truncate">{m.homeTeam?.name || "TBD"}</span>
                       </div>
                       <div className="flex items-center justify-center gap-2 px-2.5 py-0.5 bg-secondary/50 rounded text-sm font-bold w-2/12">
-                        <span>{m.homeScore ?? 0}</span>
+                        <span>{formatScoreValue(m.homeScore, m.homePenaltyScore)}</span>
                         <span className="text-muted-foreground text-[10px] font-normal">-</span>
-                        <span>{m.awayScore ?? 0}</span>
+                        <span>{formatScoreValue(m.awayScore, m.awayPenaltyScore)}</span>
                       </div>
                       <div className="flex items-center justify-end gap-3 w-4/12">
                         <span className="text-sm font-semibold truncate">{m.awayTeam?.name || "TBD"}</span>
