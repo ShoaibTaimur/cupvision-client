@@ -374,10 +374,14 @@ function BracketPage() {
 
     const parents = pairings[hoveredMatch];
     if (parents && parents.length > 0) {
-      const queue = [...parents];
+      const queue: number[] = [];
       parents.forEach((p) => {
-        matches.add(p);
-        connectors.add(`${p}-${hoveredMatch}`);
+        const pMatch = byNumber.get(p);
+        if (pMatch && pMatch.status === "completed") {
+          matches.add(p);
+          connectors.add(`${p}-${hoveredMatch}`);
+          queue.push(p);
+        }
       });
 
       while (queue.length > 0) {
@@ -385,7 +389,8 @@ function BracketPage() {
         const currParents = pairings[current];
         if (currParents) {
           currParents.forEach((p) => {
-            if (!matches.has(p)) {
+            const pMatch = byNumber.get(p);
+            if (pMatch && pMatch.status === "completed" && !matches.has(p)) {
               matches.add(p);
               connectors.add(`${p}-${current}`);
               queue.push(p);
