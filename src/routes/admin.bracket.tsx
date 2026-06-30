@@ -102,12 +102,12 @@ function BracketAdmin() {
     }
     const interval = setInterval(async () => {
       try {
-        const res = await api.get<{
+        const res = await api.authed<{
           active: boolean;
           current: number;
           total: number;
           message: string;
-        }>("/api/match-configs/heal-progress", true);
+        }>("/api/match-configs/heal-progress");
         setHealProgressData(res);
       } catch (err) {
         // ignore
@@ -455,7 +455,7 @@ function BracketAdmin() {
                           ...form,
                           bracket: {
                             enabled: form.bracket?.enabled || false,
-                            roundKey: value,
+                            roundKey: value as NonNullable<MatchConfig["bracket"]>["roundKey"],
                             side: form.bracket?.side || "left",
                             order: form.bracket?.order || 0,
                           },

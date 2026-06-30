@@ -386,11 +386,11 @@ function BracketPage() {
     [childToParents, hoveredMatch, parentToChildren],
   );
 
-  const connectorSources = useMemo(
+  const connectorSources = useMemo<[number, [number, number]][]>(
     () =>
       Object.entries(pairings)
         .filter(([child]) => byNumber.get(Number(child))?.bracket.roundKey !== "third")
-        .map(([child, parents]) => [Number(child), parents as [number, number]]),
+        .map(([child, parents]) => [Number(child), parents]),
     [byNumber, pairings],
   );
 
