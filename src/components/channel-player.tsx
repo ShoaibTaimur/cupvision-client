@@ -48,6 +48,7 @@ export function ChannelPlayer({
   const hlsRef = useRef<Hls | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastControlsToggleAt = useRef(0);
   // Guard against concurrent play() calls
   const playPromiseRef = useRef<Promise<void> | null>(null);
 
@@ -269,23 +270,25 @@ export function ChannelPlayer({
   }, [scheduleHide]);
 
   const handleInteraction = useCallback(() => {
+    if (fullscreen && Date.now() - lastControlsToggleAt.current < 350) return;
     setShowControls(true);
     scheduleHide();
-  }, [scheduleHide]);
+  }, [fullscreen, scheduleHide]);
 
-  const handleTouchInteraction = useCallback(() => {
-    if (!fullscreen) {
-      handleInteraction();
-      return;
-    }
-
+  const toggleControlsVisibility = useCallback(() => {
+    lastControlsToggleAt.current = Date.now();
     clearHideSchedule();
     setShowControls((prev) => {
       const next = !prev;
       if (next) scheduleHide();
       return next;
     });
-  }, [clearHideSchedule, fullscreen, handleInteraction, scheduleHide]);
+  }, [clearHideSchedule, scheduleHide]);
+
+  const handlePointerUpInteraction = useCallback(() => {
+    if (!fullscreen) return;
+    toggleControlsVisibility();
+  }, [fullscreen, toggleControlsVisibility]);
 
   /* ── Keyboard shortcuts ────────────────────────────────────────────── */
   useEffect(() => {
@@ -420,7 +423,7 @@ export function ChannelPlayer({
       }`}
       onMouseMove={handleInteraction}
       onMouseLeave={() => setShowControls(false)}
-      onTouchStart={handleTouchInteraction}
+      onPointerUp={handlePointerUpInteraction}
     >
       {/* ── Aspect-ratio wrapper ── */}
       <div className={`relative bg-black ${fullscreen ? "w-full h-full" : "aspect-video"}`}>
@@ -467,7 +470,7 @@ export function ChannelPlayer({
           {/* Top bar: gradient + badges */}
           <div
             className="bg-gradient-to-b from-black/70 to-transparent px-4 pb-6 pt-4"
-            onTouchStart={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
           >
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -545,7 +548,7 @@ export function ChannelPlayer({
           {/* Bottom bar: gradient + controls */}
           <div
             className="bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-4 pt-8"
-            onTouchStart={(event) => event.stopPropagation()}
+            onPointerUp={(event) => event.stopPropagation()}
           >
             <p className="mb-2 text-sm font-semibold text-white drop-shadow">{channel.name}</p>
 
