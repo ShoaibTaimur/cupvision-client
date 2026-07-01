@@ -254,6 +254,13 @@ export function ChannelPlayer({
     hideTimeout.current = setTimeout(() => setShowControls(false), 3000);
   }, []);
 
+  const clearHideSchedule = useCallback(() => {
+    if (hideTimeout.current) {
+      clearTimeout(hideTimeout.current);
+      hideTimeout.current = null;
+    }
+  }, []);
+
   useEffect(() => {
     scheduleHide();
     return () => {
@@ -265,6 +272,20 @@ export function ChannelPlayer({
     setShowControls(true);
     scheduleHide();
   }, [scheduleHide]);
+
+  const handleTouchInteraction = useCallback(() => {
+    if (!fullscreen) {
+      handleInteraction();
+      return;
+    }
+
+    clearHideSchedule();
+    setShowControls((prev) => {
+      const next = !prev;
+      if (next) scheduleHide();
+      return next;
+    });
+  }, [clearHideSchedule, fullscreen, handleInteraction, scheduleHide]);
 
   /* ── Keyboard shortcuts ────────────────────────────────────────────── */
   useEffect(() => {
@@ -399,7 +420,7 @@ export function ChannelPlayer({
       }`}
       onMouseMove={handleInteraction}
       onMouseLeave={() => setShowControls(false)}
-      onTouchStart={handleInteraction}
+      onTouchStart={handleTouchInteraction}
     >
       {/* ── Aspect-ratio wrapper ── */}
       <div className={`relative bg-black ${fullscreen ? "w-full h-full" : "aspect-video"}`}>
@@ -444,7 +465,10 @@ export function ChannelPlayer({
           }`}
         >
           {/* Top bar: gradient + badges */}
-          <div className="bg-gradient-to-b from-black/70 to-transparent px-4 pb-6 pt-4">
+          <div
+            className="bg-gradient-to-b from-black/70 to-transparent px-4 pb-6 pt-4"
+            onTouchStart={(event) => event.stopPropagation()}
+          >
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-red-300 backdrop-blur">
@@ -519,7 +543,10 @@ export function ChannelPlayer({
           </div>
 
           {/* Bottom bar: gradient + controls */}
-          <div className="bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-4 pt-8">
+          <div
+            className="bg-gradient-to-t from-black/85 via-black/40 to-transparent px-4 pb-4 pt-8"
+            onTouchStart={(event) => event.stopPropagation()}
+          >
             <p className="mb-2 text-sm font-semibold text-white drop-shadow">{channel.name}</p>
 
             <div className="flex items-center gap-3">

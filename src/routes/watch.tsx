@@ -37,11 +37,7 @@ function WatchPage() {
   const current = list.find((item) => item._id === selectedId) || featured;
   const currentIndex = current ? list.findIndex((item) => item._id === current._id) : -1;
 
-  const channelDeck = useMemo(() => {
-    if (!list.length || currentIndex < 0) return [];
-    const ordered = [...list.slice(currentIndex), ...list.slice(0, currentIndex)];
-    return ordered.slice(0, Math.min(6, ordered.length));
-  }, [list, currentIndex]);
+  const channelDeck = useMemo(() => list, [list]);
 
   const changeChannel = (direction: 1 | -1) => {
     if (!list.length || currentIndex < 0) return;
