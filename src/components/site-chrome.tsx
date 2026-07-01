@@ -264,6 +264,10 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const [adminLoggedIn, setAdminLoggedIn] = useState(false);
+  const settingsQ = useSiteSettings();
+  const disabled = settingsQ.data?.disabledNav || {};
+  const hidden = settingsQ.data?.hiddenNav || {};
+  const visibleNav = NAV.filter((item) => !hidden[item.to]);
 
   useEffect(() => {
     const syncAdminState = () => setAdminLoggedIn(!!getToken());
@@ -300,11 +304,37 @@ export function SiteFooter() {
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground md:justify-end">
-            {NAV.map((item) => (
-              <Link key={item.to} to={item.to} className="transition-colors hover:text-foreground">
-                {item.label}
-              </Link>
-            ))}
+            {visibleNav.map((item) => {
+              const d = disabled[item.to];
+              if (d) {
+                return (
+                  <button
+                    key={item.to}
+                    type="button"
+                    onClick={(e) => handleDisabledClick(e, d.message)}
+                    className="inline-flex items-center gap-1.5 text-muted-foreground/60 transition-colors hover:text-foreground/80"
+                    title={d.message}
+                  >
+                    <Lock className="size-3.5" />
+                    <span className="line-through decoration-muted-foreground/50">
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="transition-colors hover:text-foreground"
+                  activeProps={{ className: "font-semibold text-foreground" }}
+                  activeOptions={{ exact: item.to === "/" }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
             <Link to={adminHref} className="font-semibold text-primary">
               {adminLabel}
             </Link>

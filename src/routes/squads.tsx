@@ -47,6 +47,8 @@ export const Route = createFileRoute("/squads")({
   component: SquadsPage,
 });
 
+const PLACEHOLDER_TEAM_NAME = "TBD";
+
 const POS = [
   { id: "all", label: "All" },
   { id: "GK", label: "Goalkeepers" },
@@ -81,11 +83,16 @@ function SquadsPage() {
     queryFn: () => api.get<Team[]>("/api/teams"),
   });
 
+  const visibleTeams = useMemo(
+    () => (teamsQ.data || []).filter((team) => team.name !== PLACEHOLDER_TEAM_NAME),
+    [teamsQ.data],
+  );
+
   useEffect(() => {
-    if (teamsQ.data && teamsQ.data.length > 0 && !teamId) {
-      setTeamId(teamsQ.data[0]._id);
+    if (visibleTeams.length > 0 && (!teamId || !visibleTeams.some((team) => team._id === teamId))) {
+      setTeamId(visibleTeams[0]._id);
     }
-  }, [teamsQ.data, teamId]);
+  }, [visibleTeams, teamId]);
 
   const playersQ = useQuery({
     queryKey: ["players", teamId],
@@ -94,15 +101,15 @@ function SquadsPage() {
   });
 
   const filteredTeams = useMemo(() => {
-    const list = teamsQ.data || [];
+    const list = visibleTeams;
     if (!q) return list;
     const n = q.toLowerCase();
     return list.filter((t) => t.name.toLowerCase().includes(n));
-  }, [teamsQ.data, q]);
+  }, [visibleTeams, q]);
 
   const activeTeam = useMemo(
-    () => teamsQ.data?.find((t) => t._id === teamId) || null,
-    [teamsQ.data, teamId],
+    () => visibleTeams.find((t) => t._id === teamId) || null,
+    [visibleTeams, teamId],
   );
 
   const coach = useMemo(

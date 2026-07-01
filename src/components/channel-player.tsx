@@ -2,6 +2,8 @@ import Hls from "hls.js";
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { Channel } from "@/lib/api";
 import {
+  ChevronLeft,
+  ChevronRight,
   Play,
   Pause,
   Volume2,
@@ -27,7 +29,21 @@ function canUseNativeHls(video: HTMLVideoElement) {
   return video.canPlayType("application/vnd.apple.mpegurl") !== "";
 }
 
-export function ChannelPlayer({ channel }: { channel: Channel }) {
+export function ChannelPlayer({
+  channel,
+  channelNumber,
+  fullscreenChannels = [],
+  onSelectChannel,
+  onPrevChannel,
+  onNextChannel,
+}: {
+  channel: Channel;
+  channelNumber?: number;
+  fullscreenChannels?: Channel[];
+  onSelectChannel?: (channelId: string) => void;
+  onPrevChannel?: () => void;
+  onNextChannel?: () => void;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const hlsRef = useRef<Hls | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -429,16 +445,76 @@ export function ChannelPlayer({ channel }: { channel: Channel }) {
         >
           {/* Top bar: gradient + badges */}
           <div className="bg-gradient-to-b from-black/70 to-transparent px-4 pb-6 pt-4">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-red-300 backdrop-blur">
-                <Radio className="size-3 animate-pulse" />
-                Live
-              </span>
-              {channel.category && (
-                <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur">
-                  {channel.category}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-red-300 backdrop-blur">
+                  <Radio className="size-3 animate-pulse" />
+                  Live
                 </span>
-              )}
+                {channel.category && (
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur">
+                    {channel.category}
+                  </span>
+                )}
+                {typeof channelNumber === "number" && channelNumber > 0 ? (
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80 backdrop-blur">
+                    CH {String(channelNumber).padStart(2, "0")}
+                  </span>
+                ) : null}
+              </div>
+
+              {fullscreen && fullscreenChannels.length > 1 ? (
+                <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/28 p-3 backdrop-blur-md">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/55">
+                      Channel switch
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={onPrevChannel}
+                        className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                      >
+                        <ChevronLeft className="size-3.5" />
+                        Prev
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onNextChannel}
+                        className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+                      >
+                        Next
+                        <ChevronRight className="size-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {fullscreenChannels.map((item) => {
+                      const active = item._id === channel._id;
+                      return (
+                        <button
+                          key={item._id}
+                          type="button"
+                          onClick={() => onSelectChannel?.(item._id)}
+                          className={`rounded-xl border px-3 py-2 text-left transition ${
+                            active
+                              ? "border-primary/40 bg-primary/20"
+                              : "border-white/10 bg-white/5 hover:bg-white/10"
+                          }`}
+                        >
+                          <div className="truncate text-sm font-semibold text-white">
+                            {item.name}
+                          </div>
+                          <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-white/55">
+                            {active ? "On Air" : item.category || "Live"}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
 

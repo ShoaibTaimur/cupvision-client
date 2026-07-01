@@ -121,48 +121,47 @@ function Home() {
       {/* Hero */}
       <SectionReveal
         delay={0.05}
-        className="relative isolate flex min-h-screen items-center overflow-hidden border-b border-border/70"
+        className="relative isolate flex min-h-[68vh] items-center overflow-hidden border-b border-border/70"
       >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(117,197,255,0.1),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(83,214,168,0.08),transparent_24%),linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[length:72px_72px] opacity-20" />
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32 md:pt-36 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-primary backdrop-blur">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(117,197,255,0.05),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(117,197,255,0.04),transparent_22%)]" />
+        <div className="relative mx-auto grid max-w-7xl gap-6 px-4 pb-12 pt-22 sm:px-6 sm:pb-14 sm:pt-24 md:pt-28 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
+          <div className="max-w-xl rounded-[1.75rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.14)] backdrop-blur xl:p-6">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-primary">
               <Radio className="size-3.5" />
               FIFA World Cup 2026
             </span>
-            <h1 className="mt-6 max-w-4xl text-4xl font-black tracking-[-0.04em] text-white sm:text-5xl md:text-6xl xl:text-7xl">
-              Tournament pulse.
-              <span className="block bg-[linear-gradient(135deg,#f7fbff_0%,#8ddcff_38%,#73f0c1_100%)] bg-clip-text text-transparent">
-                One sharp live board.
+            <h1 className="mt-4 max-w-3xl text-[2rem] font-black leading-[0.98] tracking-[-0.04em] text-white sm:text-[2.35rem] md:text-[2.7rem] xl:text-[2.95rem]">
+              World Cup tracker.
+              <span className="mt-2 block text-slate-200">
+                Fast live signal. Clean overview.
               </span>
             </h1>
-            <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
-              Live match status, countdowns, scoreboard, squads, watch links, timeline. Fast scan.
-              Strong signal. No clutter.
+            <p className="mt-3 max-w-lg text-sm leading-6 text-slate-300">
+              Live match status, next kickoff, scoreboard, squads, watch links, timeline. Compact,
+              readable, always current.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 to="/watch"
-                className="relative inline-flex items-center gap-2 overflow-hidden rounded-2xl border border-primary/40 bg-[linear-gradient(135deg,rgba(117,197,255,1),rgba(83,214,168,0.92))] px-5 py-3 text-sm font-semibold text-slate-950 shadow-[0_20px_50px_rgba(117,197,255,0.4)] ring-1 ring-white/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_26px_65px_rgba(117,197,255,0.5)]"
+                className="inline-flex items-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-[0_16px_38px_rgba(117,197,255,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-primary/90"
               >
-                <span className="absolute inset-0 bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.35),transparent)] opacity-70" />
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex h-full w-full rounded-full bg-white/80 opacity-75 animate-ping" />
                   <span className="relative inline-flex size-2 rounded-full bg-white" />
                 </span>
-                <span className="relative">Watch matches</span>
-                <ChevronRight className="relative size-4" />
+                <span>Watch matches</span>
+                <ChevronRight className="size-4" />
               </Link>
               <Link
                 to="/scoreboard"
-                className="inline-flex items-center gap-1.5 rounded-2xl border border-white/12 bg-white/6 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
+                className="inline-flex items-center gap-1.5 rounded-2xl border border-white/10 bg-white/6 px-5 py-3 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
               >
                 View scoreboard
               </Link>
             </div>
 
-            <div className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-3">
+            <div className="mt-5 grid max-w-lg gap-2 sm:grid-cols-3">
               {[
                 {
                   label: "Live now",
@@ -173,10 +172,12 @@ function Home() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="rounded-3xl border border-white/10 bg-white/6 px-4 py-4 backdrop-blur"
+                  className="rounded-[1.35rem] border border-white/8 bg-black/14 px-3.5 py-3"
                 >
-                  <div className="text-2xl font-black tabular-nums text-white">{item.value}</div>
-                  <div className="mt-1 text-xs uppercase tracking-[0.22em] text-slate-400">
+                  <div className="text-xl font-black tabular-nums tracking-[-0.03em] text-white sm:text-2xl">
+                    {item.value}
+                  </div>
+                  <div className="mt-1 text-[10px] uppercase tracking-[0.2em] text-slate-400">
                     {item.label}
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { ExternalLink, PlayCircle, Radio, Tv } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ExternalLink, Zap } from "lucide-react";
 import { ChannelPlayer } from "@/components/channel-player";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, ChannelCardSkeleton, PlayerSkeleton } from "@/components/skeleton";
@@ -35,130 +35,182 @@ function WatchPage() {
   }, [featured, list, selectedId]);
 
   const current = list.find((item) => item._id === selectedId) || featured;
+  const currentIndex = current ? list.findIndex((item) => item._id === current._id) : -1;
+
+  const channelDeck = useMemo(() => {
+    if (!list.length || currentIndex < 0) return [];
+    const ordered = [...list.slice(currentIndex), ...list.slice(0, currentIndex)];
+    return ordered.slice(0, Math.min(6, ordered.length));
+  }, [list, currentIndex]);
+
+  const changeChannel = (direction: 1 | -1) => {
+    if (!list.length || currentIndex < 0) return;
+    const nextIndex = (currentIndex + direction + list.length) % list.length;
+    setSelectedId(list[nextIndex]._id);
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
-      <SectionReveal
-        delay={0.06}
-        className="relative overflow-hidden rounded-[1.75rem] border border-border bg-card p-6 sm:p-8"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10 pointer-events-none" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs uppercase tracking-[0.3em] text-primary">
-              <Radio className="size-3.5" /> Live Channels
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
-              Watch curated streams without leaving CupVision.
-            </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Admin adds channels. Fans open one tab. Featured stream stays front and center on all
-              screens.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:w-auto">
-            <StatCard label="Channels live" value={String(list.length)} icon={Tv} />
-            <StatCard label="Featured now" value={featured?.name ? "1" : "0"} icon={PlayCircle} />
-          </div>
-        </div>
+      <SectionReveal delay={0.08} className="mb-8">
+        <h1 className="mb-2 text-3xl font-bold">Watch</h1>
+        <p className="text-muted-foreground">
+          Watch live channels inside CupVision. Switch streams fast from player controls.
+        </p>
       </SectionReveal>
 
-      <SectionReveal
-        delay={0.14}
-        className="mt-8 grid gap-6 xl:items-start xl:grid-cols-[minmax(0,1.45fr)_360px]"
-      >
-        <div className="space-y-4">
-          {channels.isLoading ? (
-            <PlayerSkeleton />
-          ) : current ? (
-            <>
-              {current.useRedirect && current.redirectUrl ? (
-                <RedirectCard channel={current} />
-              ) : (
-                <ChannelPlayer channel={current} />
-              )}
-              <div className="rounded-lg border border-border bg-card p-5">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="inline-flex rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                    {current.badge || current.category || "Live"}
-                  </span>
-                  {current.isFeatured ? (
-                    <span className="text-xs uppercase tracking-[0.3em] text-primary">
-                      Featured
-                    </span>
-                  ) : null}
-                </div>
-                <h2 className="mt-4 text-2xl font-semibold">{current.name}</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {current.description || "Live channel available now."}
-                </p>
+      <SectionReveal delay={0.14}>
+        {channels.isLoading ? (
+          <PlayerSkeleton />
+        ) : current ? (
+          <div className="space-y-5">
+            <div className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(17,24,39,0.98),rgba(10,15,25,0.98))] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.35)] sm:p-4">
+              <div className="rounded-[1.6rem] border border-white/10 bg-black/30 p-2 sm:p-3">
+                {current.useRedirect && current.redirectUrl ? (
+                  <RedirectCard channel={current} />
+                ) : (
+                  <ChannelPlayer
+                    channel={current}
+                    channelNumber={currentIndex + 1}
+                    fullscreenChannels={channelDeck}
+                    onSelectChannel={setSelectedId}
+                    onPrevChannel={() => changeChannel(-1)}
+                    onNextChannel={() => changeChannel(1)}
+                  />
+                )}
               </div>
-            </>
-          ) : (
-            <EmptyState />
-          )}
-        </div>
 
-        <aside className="self-start rounded-lg border border-border bg-card p-4 sm:p-5">
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold">Channel lineup</h2>
-            <p className="text-sm text-muted-foreground">
-              Tap channel. Player updates fast on mobile, tablet, desktop.
-            </p>
-          </div>
-          {channels.isLoading ? (
-            <div className="h-[28rem] space-y-3 overflow-y-auto pr-1">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <ChannelCardSkeleton key={index} />
-              ))}
-            </div>
-          ) : list.length ? (
-            <div className="h-[32rem] space-y-3 overflow-y-auto pr-1">
-              {list.map((item) => {
-                const active = item._id === current?._id;
-                return (
-                  <button
-                    key={item._id}
-                    onClick={() => setSelectedId(item._id)}
-                    className={`w-full rounded-lg border p-4 text-left transition-colors ${active ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-secondary"}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold">{item.name}</div>
-                        <div className="mt-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                          {item.category || "Live channel"}
-                        </div>
-                      </div>
-                      {item.isFeatured ? (
-                        <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
+              <div className="mt-4 rounded-[1.4rem] border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="min-w-0">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                        {current.badge || current.category || "Live"}
+                      </span>
+                      {current.isFeatured ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-primary">
+                          <Zap className="size-3.5" />
                           Featured
                         </span>
                       ) : null}
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
+                        CH {String(currentIndex + 1).padStart(2, "0")}
+                      </span>
                     </div>
-                    <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted-foreground">
-                      {item.description || "Watch stream inside CupVision."}
+                    <h2 className="mt-3 text-2xl font-semibold text-white">{current.name}</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-white/70">
+                      {current.description || "Live channel available now."}
                     </p>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <EmptyState compact />
-          )}
-        </aside>
-      </SectionReveal>
-    </div>
-  );
-}
+                  </div>
+                </div>
 
-function StatCard({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Tv }) {
-  return (
-    <div className="min-w-32 rounded-lg border border-border bg-background/80 p-4">
-      <div className="flex items-center justify-between text-muted-foreground">
-        <span className="text-xs uppercase tracking-[0.2em]">{label}</span>
-        <Icon className="size-4" />
-      </div>
-      <div className="mt-2 text-3xl font-semibold">{value}</div>
+                {list.length > 1 ? (
+                  <div className="mt-4">
+                    <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.26em] text-white/45">
+                      Quick channel switch
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {channelDeck.map((item) => {
+                        const active = item._id === current._id;
+                        return (
+                          <button
+                            key={item._id}
+                            type="button"
+                            onClick={() => setSelectedId(item._id)}
+                            className={`group rounded-[1.1rem] border p-3 text-left transition-all ${
+                              active
+                                ? "border-primary/40 bg-primary/14 shadow-[0_12px_30px_rgba(59,130,246,0.18)]"
+                                : "border-white/10 bg-white/4 hover:border-white/20 hover:bg-white/8"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <div className="text-[11px] uppercase tracking-[0.24em] text-white/45">
+                                  CH {String(list.findIndex((entry) => entry._id === item._id) + 1).padStart(2, "0")}
+                                </div>
+                                <div className="mt-1 truncate text-sm font-semibold text-white">
+                                  {item.name}
+                                </div>
+                              </div>
+                              <div
+                                className={`rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] ${
+                                  active
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-white/8 text-white/60 group-hover:text-white/85"
+                                }`}
+                              >
+                                {active ? "On Air" : item.category || "Live"}
+                              </div>
+                            </div>
+                            <p className="mt-2 line-clamp-2 text-xs leading-5 text-white/60">
+                              {item.description || "Switch stream instantly inside CupVision TV."}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            {list.length > channelDeck.length ? (
+              <div className="rounded-[1.5rem] border border-border bg-card p-4 sm:p-5">
+                <div className="mb-4">
+                  <h2 className="text-lg font-semibold">More channels</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Full lineup still here. Main switching stays near player above.
+                  </p>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {list.map((item) => {
+                    const active = item._id === current?._id;
+                    return (
+                      <button
+                        key={item._id}
+                        onClick={() => setSelectedId(item._id)}
+                        className={`w-full rounded-xl border p-4 text-left transition-colors ${
+                          active
+                            ? "border-primary bg-primary/10"
+                            : "border-border bg-background hover:bg-secondary"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-semibold">{item.name}</div>
+                            <div className="mt-1 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+                              {item.category || "Live channel"}
+                            </div>
+                          </div>
+                          {item.isFeatured ? (
+                            <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-primary">
+                              Featured
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mt-3 line-clamp-2 text-sm leading-5 text-muted-foreground">
+                          {item.description || "Watch stream inside CupVision."}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <EmptyState />
+        )}
+      </SectionReveal>
+
+      {channels.isLoading ? (
+        <SectionReveal delay={0.2} className="mt-6 rounded-[1.5rem] border border-border bg-card p-4 sm:p-5">
+          <div className="space-y-3">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <ChannelCardSkeleton key={index} />
+            ))}
+          </div>
+        </SectionReveal>
+      ) : null}
     </div>
   );
 }

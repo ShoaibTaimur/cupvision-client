@@ -68,6 +68,7 @@ function Dashboard() {
   // Stages stats
   const STAGES_ORDER = [
     "Group Stage",
+    "Round of 32",
     "Round of 16",
     "Quarter-finals",
     "Semi-finals",
