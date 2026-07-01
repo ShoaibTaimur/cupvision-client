@@ -722,10 +722,10 @@ function MatchDetailsDialog({
 
         {match && (
           <div className="space-y-4">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4">
               <TeamBlock team={match.homeTeam} highlight={homeWin} dim={awayWin} align="left" />
-              <div className="text-center">
-                <div className="text-2xl font-black tabular-nums">
+              <div className="min-w-0 text-center">
+                <div className="whitespace-nowrap text-[clamp(1.1rem,3.8vw,1.5rem)] font-black tabular-nums leading-none tracking-[-0.04em]">
                   {typeof match.homeScore === "number"
                     ? formatScoreValue(match.homeScore, match.homePenaltyScore)
                     : "–"}

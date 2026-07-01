@@ -121,12 +121,12 @@ function Home() {
       {/* Hero */}
       <SectionReveal
         delay={0.05}
-        className="relative isolate flex min-h-[68vh] items-center overflow-hidden border-b border-border/70"
+        className="relative isolate overflow-hidden border-b border-border/70"
       >
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01))]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(117,197,255,0.05),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(117,197,255,0.04),transparent_22%)]" />
-        <div className="relative mx-auto grid max-w-7xl gap-6 px-4 pb-12 pt-22 sm:px-6 sm:pb-14 sm:pt-24 md:pt-28 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
-          <div className="max-w-xl rounded-[1.75rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.14)] backdrop-blur xl:p-6">
+        <div className="relative mx-auto grid max-w-7xl gap-6 px-4 pb-10 pt-24 sm:px-6 sm:pb-12 sm:pt-28 md:pb-14 md:pt-32 lg:grid-cols-[0.98fr_1.02fr] lg:items-center">
+          <div className="w-full rounded-[1.75rem] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.14)] backdrop-blur lg:max-w-xl xl:p-6">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-primary">
               <Radio className="size-3.5" />
               FIFA World Cup 2026
@@ -187,7 +187,7 @@ function Home() {
 
           <div className="relative">
             <div className="absolute -right-6 top-8 h-24 w-24 rounded-full border border-white/10 bg-white/8 blur-2xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.12),rgba(255,255,255,0.05))] p-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] backdrop-blur-xl sm:p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">
@@ -204,7 +204,7 @@ function Home() {
                 </div>
               </div>
 
-              <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-slate-950/30 p-4">
+              <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-slate-950/30 p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-4 text-sm text-slate-300">
                   <span>{upcoming?.stadium || "Venue TBA"}</span>
                   <span>
@@ -251,7 +251,7 @@ function Home() {
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4 sm:p-5">
                   <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
                     Featured stream
                   </div>
@@ -262,7 +262,7 @@ function Home() {
                     {featuredChannel?.badge || "Global feed"}
                   </div>
                 </div>
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/6 p-4 sm:p-5">
                   <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
                     Live status
                   </div>
