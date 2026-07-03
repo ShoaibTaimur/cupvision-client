@@ -13,7 +13,6 @@ import {
   Trophy,
   Menu,
   X,
-  Home,
   Radio,
   Shirt,
   Navigation,
@@ -98,12 +97,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="p-2 space-y-1 border-t border-border">
-          <Link
-            to="/"
-            className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-          >
-            <Home className="size-4" /> Back to site
-          </Link>
           <button
             onClick={logOut}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
@@ -115,7 +108,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <header className="lg:hidden sticky top-0 z-40 backdrop-blur-lg bg-background/80 border-b border-border w-full">
         <div className="h-14 px-4 flex items-center justify-between">
-          <Link to="/admin/dashboard" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <div className="size-7 rounded-md bg-primary flex items-center justify-center text-primary-foreground">
               <Trophy className="size-4" />
             </div>
@@ -146,7 +139,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               className={`absolute right-0 top-0 h-full w-72 max-w-[85%] bg-card border-l border-border shadow-2xl flex flex-col ${closing ? "animate-out slide-out-to-right duration-300" : "animate-in slide-in-from-right duration-300"}`}
             >
               <div className="flex items-center justify-between px-5 h-16 border-b border-border">
-                <div className="flex items-center gap-2">
+                <Link to="/" onClick={closeMenu} className="flex items-center gap-2">
                   <div className="size-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground">
                     <Trophy className="size-5" />
                   </div>
@@ -154,7 +147,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     <div className="font-bold tracking-tight">CupVision</div>
                     <div className="text-[10px] text-muted-foreground -mt-0.5">Admin</div>
                   </div>
-                </div>
+                </Link>
                 <button
                   onClick={closeMenu}
                   className="inline-flex items-center justify-center size-9 rounded-md hover:bg-secondary"
@@ -180,14 +173,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 })}
               </nav>
               <div className="p-3 space-y-1 border-t border-border">
-                <Link
-                  to="/"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Home className="size-4" />
-                  <span>Back to site</span>
-                </Link>
                 <button
                   onClick={() => {
                     closeMenu();
