@@ -29,6 +29,14 @@ function canUseNativeHls(video: HTMLVideoElement) {
   return video.canPlayType("application/vnd.apple.mpegurl") !== "";
 }
 
+function shouldPreferNativeHls() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  const isApple = /iPad|iPhone|iPod|Macintosh/.test(ua);
+  const isChromium = /Chrome|CriOS|Chromium|Edg|OPR|Firefox/.test(ua);
+  return isApple && !isChromium;
+}
+
 export function ChannelPlayer({
   channel,
   channelNumber,
@@ -127,7 +135,8 @@ export function ChannelPlayer({
     };
 
     if (isHls) {
-      if (Hls.isSupported()) {
+      const useNativeHls = shouldPreferNativeHls() && canUseNativeHls(video);
+      if (!useNativeHls && Hls.isSupported()) {
         const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
         hlsRef.current = hls;
         hls.loadSource(src);
