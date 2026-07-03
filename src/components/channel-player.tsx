@@ -127,10 +127,7 @@ export function ChannelPlayer({
     };
 
     if (isHls) {
-      if (canUseNativeHls(video)) {
-        video.src = src;
-        video.addEventListener("loadedmetadata", signalReady, { once: true });
-      } else if (Hls.isSupported()) {
+      if (Hls.isSupported()) {
         const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
         hlsRef.current = hls;
         hls.loadSource(src);
@@ -145,6 +142,9 @@ export function ChannelPlayer({
             );
           }
         });
+      } else if (canUseNativeHls(video)) {
+        video.src = src;
+        video.addEventListener("loadedmetadata", signalReady, { once: true });
       } else {
         setError("Your browser does not support this live stream.");
       }
