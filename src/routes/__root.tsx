@@ -18,6 +18,7 @@ import { ScrollTopButton } from "../components/scroll-top-button";
 import { DisabledRouteGuard } from "../components/disabled-route-guard";
 import { FloatingLiveBadge } from "../components/floating-live-badge";
 import { FloatingTournamentProgress } from "../components/floating-tournament-progress";
+import { CelebrationModal } from "../components/celebration-modal";
 import { Toaster } from "sonner";
 
 // Inject Vercel Analytics
@@ -136,6 +137,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen flex flex-col">
+        {!isAdmin && <CelebrationModal />}
         {!isAdmin && <SiteHeader />}
         <main className={isAdmin ? "flex-1" : isHome ? "flex-1" : "flex-1 pt-20 sm:pt-24"}>
           {isAdmin ? <Outlet /> : <DisabledRouteGuard><Outlet /></DisabledRouteGuard>}

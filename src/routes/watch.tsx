@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, Zap } from "lucide-react";
+import { ExternalLink, Zap, Radio } from "lucide-react";
 import { ChannelPlayer } from "@/components/channel-player";
 import { SectionReveal } from "@/components/section-reveal";
 import { Skeleton, ChannelCardSkeleton, PlayerSkeleton } from "@/components/skeleton";
